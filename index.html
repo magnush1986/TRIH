@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Rest Is History — Episode Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <!-- Replace cover.png with your actual image filename if needed -->
+        <img src="cover.png" alt="The Rest Is History" class="cover" />
+        <div>
+          <h1 class="title">The Rest Is History — Episode Explorer</h1>
+          <p class="subtitle">Search, filter and explore all free episodes of the podcast.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="filters">
+      <div class="filters-row">
+        <input id="q" type="search" placeholder="Search title, description, period or region…" aria-label="Search episodes" />
+      </div>
+      <div class="filters-row">
+        <div class="filter">
+          <label for="yearFilter">Year</label>
+          <select id="yearFilter" multiple></select>
+        </div>
+        <div class="filter">
+          <label for="periodFilter">Period</label>
+          <select id="periodFilter" multiple></select>
+        </div>
+        <div class="filter">
+          <label for="regionFilter">Region</label>
+          <select id="regionFilter" multiple></select>
+        </div>
+        <div class="filter actions">
+          <button id="clearBtn" type="button" class="button secondary">Clear</button>
+        </div>
+      </div>
+      <div class="filters-row chips" id="activeChips"></div>
+    </section>
+
+    <section id="stats" class="stats"></section>
+
+    <section id="list" class="groups"></section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      Built by the TRIH community • Data source: Google Sheets
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="data.js"></script>
+</body>
+</html>
