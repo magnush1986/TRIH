@@ -142,3 +142,20 @@ a.button{
   color:var(--muted);
 }
 .footer-inner{max-width:1100px;margin:0 auto}
+
+.episode summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.episode summary .toggle-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+}
+
+.episode[open] summary .toggle-icon {
+  transform: rotate(90deg);
+}
