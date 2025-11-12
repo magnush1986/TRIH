@@ -241,13 +241,22 @@ function renderEpisodeCard(r) {
   d.className = "episode-card";
 
   const epNum = (r.Episode != null && !isNaN(r.Episode)) ? `${r.Episode}. ` : "";
-  const title = `${epNum}${r.Title}`;
+  const cleanTitle = r.Title.replace(/^\d+\.\s*/, ""); // remove leading "123. "
+  const title = `${epNum}${cleanTitle}`;
   const dateStr = r.PublishDate ? r.PublishDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "";
 
   const summary = document.createElement("summary");
   summary.className = "episode-summary";
-  summary.textContent = title;
+  
+  summary.innerHTML = `
+    <svg class="toggle-icon" viewBox="0 0 24 24">
+      <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <span>${escapeHtml(title)}</span>
+  `;
+  
   d.appendChild(summary);
+
 
   const body = document.createElement("div");
   body.className = "episode-body";
@@ -297,8 +306,9 @@ function groupBy(arr, fn) {
   return map;
 }
 function monthLabel(m) {
-  return new Date(2000, m, 1).toLocaleString(undefined, { month: 'long' });
+  return new Date(2000, m, 1).toLocaleString("en-US", { month: "long" });
 }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
