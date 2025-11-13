@@ -558,16 +558,16 @@ function renderGroupsByPeriod(rows) {
     const aIsNone = a.startsWith("No ");
     const bIsNone = b.startsWith("No ");
   
-    // Always place "No period assigned" last
+    // "No period assigned" ska alltid hamna sist
     if (aIsNone && !bIsNone) return 1;
     if (!aIsNone && bIsNone) return -1;
   
-    // Otherwise sort by newest PublishDate within each period
-    const maxA = Math.max(...groups[a].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
-    const maxB = Math.max(...groups[b].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
-  
-    return maxB - maxA;
+    // I övrigt: samma logik som sortWithNoneLast (omvänd ordning, stripPrefix)
+    const aa = stripPrefix(a);
+    const bb = stripPrefix(b);
+    return bb.localeCompare(aa, undefined, { numeric: true });
   });
+
 
   keys.forEach(key => {
     const section = document.createElement("section");
@@ -625,6 +625,7 @@ function sortAlphaNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
+
 
 
 
