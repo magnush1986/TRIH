@@ -36,6 +36,9 @@ function bootstrap() {
 
   clearBtn.addEventListener("click", resetFilters);
 
+  // ⭐ NEW: group-by listener
+document.getElementById("groupBy").addEventListener("change", applyAndRender);
+
   loadCsv(SHEET_CSV_URL)
     .then(rows => {
       const normalized = rows.map(r => ({
@@ -261,8 +264,17 @@ function applyAndRender() {
 
   renderChips();
   renderStats(rows);
-  renderGroups(rows);
-}
+  
+  const mode = document.getElementById("groupBy").value;
+  if (mode === "date") {
+    renderGroups(rows);            // befintlig år→månad
+  } else if (mode === "period") {
+    renderGroupsByPeriod(rows);    // NY funktion
+  } else {
+    renderGroupsByRegion(rows);    // NY funktion
+  }
+  
+  }
 
 function renderChips() {
   const chipBox = document.getElementById("activeChips");
@@ -523,6 +535,60 @@ function rebuildFilterOptionsCascade() {
   });
 }
 
+
+function renderGroupsByPeriod(rows) {
+  const host = document.getElementById("list");
+  host.innerHTML = "";
+
+  const groups = groupBy(rows, r => 
+    r.Period.length ? r.Period.join(", ") : "No period assigned"
+  );
+
+  const keys = Object.keys(groups).sort((a, b) => {
+    const maxA = Math.max(...groups[a].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
+    const maxB = Math.max(...groups[b].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
+    return maxB - maxA; // DESC by newest episode
+  });
+
+  keys.forEach(key => {
+    const section = document.createElement("section");
+    section.className = "year-group";
+    section.innerHTML = `<h2 class="year-heading">📆 ${key}</h2>`;
+
+    groups[key]
+      .sort((a, b) => b.PublishDate - a.PublishDate)
+      .forEach(r => section.appendChild(renderEpisodeCard(r)));
+
+    host.appendChild(section);
+  });
+}
+
+function renderGroupsByRegion(rows) {
+  const host = document.getElementById("list");
+  host.innerHTML = "";
+
+  const groups = groupBy(rows, r => 
+    r.Region.length ? r.Region.join(", ") : "No region assigned"
+  );
+
+  const keys = Object.keys(groups).sort((a, b) => {
+    const maxA = Math.max(...groups[a].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
+    const maxB = Math.max(...groups[b].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
+    return maxB - maxA;
+  });
+
+  keys.forEach(key => {
+    const section = document.createElement("section");
+    section.className = "year-group";
+    section.innerHTML = `<h2 class="year-heading">🌍 ${key}</h2>`;
+
+    groups[key]
+      .sort((a, b) => b.PublishDate - a.PublishDate)
+      .forEach(r => section.appendChild(renderEpisodeCard(r)));
+
+    host.appendChild(section);
+  });
+}
 
 
 
