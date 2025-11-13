@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <header class="site-header">
     <div class="header-inner">
@@ -40,7 +41,7 @@
       </p>
     </section>
 
-    <!-- ⭐ NEW: Expanding contribute-box with episode-card styling -->
+    <!-- ⭐ NEW: Expanding contribute-box -->
     <section class="contribute">
       <details class="contribute-details">
         <summary class="contribute-summary">
@@ -58,8 +59,8 @@
         </div>
       </details>
     </section>
-    <!-- End contribute-box -->
 
+    <!-- ⭐ Filters -->
     <section class="filters">
 
       <!-- Search -->
@@ -100,6 +101,17 @@
 
     <section id="stats" class="stats"></section>
 
+    <!-- ⭐ NEW: Group-by toggle -->
+    <div class="group-toggle">
+      <label for="groupBy">Group by:</label>
+      <select id="groupBy">
+        <option value="date" selected>Publish date</option>
+        <option value="period">Period</option>
+        <option value="region">Region</option>
+      </select>
+    </div>
+
+    <!-- Episode groups -->
     <section id="list" class="groups"></section>
   </main>
 
@@ -107,7 +119,7 @@
     <div class="footer-inner">
       Built by the TRIH community • Data source: Google Sheets
     </div>
-  
+
     <div class="footer-official">
       <a href="https://www.therestishistory.com" target="_blank" rel="noopener">
         Visit the official The Rest Is History website →
@@ -115,9 +127,7 @@
     </div>
   </footer>
 
-
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="data.js"></script>
 </body>
 </html>
-
