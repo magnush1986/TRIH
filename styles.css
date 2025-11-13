@@ -501,4 +501,20 @@ details[open] .toggle-icon {
   font-size: 0.95rem;
 }
 
+.footer-official {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.footer-official a {
+  color: #0044cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-official a:hover {
+  text-decoration: underline;
+}
+
 
