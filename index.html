@@ -25,26 +25,33 @@
 
   <main class="layout">
     <section class="filters">
-      <div class="filters-row">
-        <input id="q" type="search" placeholder="Search title, description, period or region…" aria-label="Search episodes" />
-      </div>
-      <div class="filters-row">
-        <div class="filter">
-          <label for="yearFilter">Year</label>
-          <select id="yearFilter" multiple></select>
+      <div class="filters-row pills-row">
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="year">
+            <span>Year</span>
+            <span class="pill-arrow">▾</span>
+          </button>
         </div>
-        <div class="filter">
-          <label for="periodFilter">Period</label>
-          <select id="periodFilter" multiple></select>
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="period">
+            <span>Period</span>
+            <span class="pill-arrow">▾</span>
+          </button>
         </div>
-        <div class="filter">
-          <label for="regionFilter">Region</label>
-          <select id="regionFilter" multiple></select>
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="region">
+            <span>Region</span>
+            <span class="pill-arrow">▾</span>
+          </button>
         </div>
         <div class="filter actions">
           <button id="clearBtn" type="button" class="button secondary">Clear</button>
         </div>
       </div>
+      
+      <!-- Paneler där JS stoppar in checkboxlistor -->
+      <div id="filterDropdownHost"></div>
+
       <div class="filters-row chips" id="activeChips"></div>
     </section>
 
@@ -63,3 +70,4 @@
   <script src="data.js"></script>
 </body>
 </html>
+
