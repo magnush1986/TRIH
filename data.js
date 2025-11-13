@@ -39,6 +39,7 @@ function bootstrap() {
   loadCsv(SHEET_CSV_URL)
     .then(rows => {
       const normalized = rows.map(r => ({
+        GUID: (r["GUID"] || "").trim(), 
         Episode: parseEpisode(r["Episode"]),
         Title: (r["Title"] || "").trim(),
         PublishDate: parseDate(r["Publish Date"]),
@@ -436,6 +437,7 @@ function sortWithNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
+
 
 
 
