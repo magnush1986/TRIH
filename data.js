@@ -44,8 +44,9 @@ function bootstrap() {
         PublishDate: parseDate(r["Publish Date"]),
         Description: (r["Description"] || "").trim(),
         AudioURL: (r["Audio URL"] || "").trim(),
-        Region: (r["Region"] || "").trim(),
-        Period: (r["Period"] || "").trim()
+        Region: parseTags(r["Region"]),
+        Period: parseTags(r["Period"])
+
       }));
 
       state.raw = normalized.filter(r => r.Title);
@@ -81,8 +82,8 @@ function buildFilterOptions(rows) {
   rows.forEach(r => {
     const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
     if (y) years.add(String(y));
-    if (r.Period) periods.add(r.Period);
-    if (r.Region) regions.add(r.Region);
+    r.Period.forEach(p => periods.add(p));
+    r.Region.forEach(g => regions.add(g));
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -218,9 +219,8 @@ function applyAndRender() {
       const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : "";
       if (!years.has(y)) return false;
     }
-    if (periods.size && !periods.has(r.Period)) return false;
-    if (regions.size && !regions.has(r.Region)) return false;
-
+    if (periods.size && !r.Period.some(tag => periods.has(tag))) return false;
+    if (regions.size && !r.Region.some(tag => regions.has(tag))) return false;
     return true;
   });
 
@@ -333,8 +333,8 @@ function renderEpisodeCard(r) {
 
   const meta = [
     dateStr && `📅 ${dateStr}`,
-    r.Period && `📆 Period: ${escapeHtml(r.Period)}`,
-    r.Region && `🌍 Region: ${escapeHtml(r.Region)}`
+    r.Period.length && `📆 Period: ${escapeHtml(r.Period.join(", "))}`,
+    r.Region.length && `🌍 Region: ${escapeHtml(r.Region.join(", "))}`
   ].filter(Boolean).join(" · ");
 
   const desc = r.Description ? `<p class="desc">${escapeHtml(r.Description)}</p>` : "";
@@ -381,4 +381,13 @@ function monthLabel(m) {
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+function parseTags(v) {
+  if (!v) return [];
+  return String(v)
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
 
