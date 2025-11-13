@@ -105,7 +105,7 @@ function buildFilterOptions(rows) {
   const dataMap = {
     year: arrDesc([...years]),
     period: sortWithNoneLast([...periods]),
-    region: sortWithNoneLast([...regions])
+    region: sortAlphaNoneLast([...regions])
   };
 
 
@@ -509,9 +509,13 @@ function rebuildFilterOptionsCascade() {
     const inner = panel.querySelector(".filter-dropdown-inner");
     inner.innerHTML = "";
 
-    const sorted = key === "year"
-      ? [...set].sort((a, b) => Number(b) - Number(a))   // år: descending
-      : sortWithNoneLast([...set]);                      // period/region: alfabetiskt, "No…" sist
+    const sorted =
+      key === "year"
+        ? [...set].sort((a, b) => Number(b) - Number(a))
+        : key === "period"
+        ? sortWithNoneLast([...set])
+        : sortAlphaNoneLast([...set]);  // region
+                      // period/region: alfabetiskt, "No…" sist
 
     sorted.forEach(v => {
       const opt = document.createElement("label");
@@ -551,9 +555,18 @@ function renderGroupsByPeriod(rows) {
   );
 
   const keys = Object.keys(groups).sort((a, b) => {
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+  
+    // Always place "No period assigned" last
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+  
+    // Otherwise sort by newest PublishDate within each period
     const maxA = Math.max(...groups[a].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
     const maxB = Math.max(...groups[b].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
-    return maxB - maxA; // DESC by newest episode
+  
+    return maxB - maxA;
   });
 
   keys.forEach(key => {
@@ -578,9 +591,15 @@ function renderGroupsByRegion(rows) {
   );
 
   const keys = Object.keys(groups).sort((a, b) => {
-    const maxA = Math.max(...groups[a].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
-    const maxB = Math.max(...groups[b].map(r => r.PublishDate ? r.PublishDate.getTime() : 0));
-    return maxB - maxA;
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+  
+    // Always place "No region assigned" last
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+  
+    // Alphabetical sort for regions
+    return a.localeCompare(b);
   });
 
   keys.forEach(key => {
@@ -593,6 +612,17 @@ function renderGroupsByRegion(rows) {
       .forEach(r => section.appendChild(renderEpisodeCard(r)));
 
     host.appendChild(section);
+  });
+}
+
+function sortAlphaNoneLast(arr) {
+  return arr.sort((a, b) => {
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+
+    return a.localeCompare(b);
   });
 }
 
