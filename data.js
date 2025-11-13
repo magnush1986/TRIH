@@ -356,12 +356,22 @@ function renderEpisodeCard(r) {
   ].filter(Boolean).join(" · ");
 
   const desc = r.Description ? `<p class="desc">${escapeHtml(r.Description)}</p>` : "";
-  const play = r.AudioURL ? `<a href="${encodeURI(r.AudioURL)}" target="_blank" rel="noopener" class="button">▶ Play episode</a>` : "";
+  const smartLink = r.GUID
+    ? `https://pod.link/the-rest-is-history/episode/${encodeURIComponent(r.GUID)}`
+    : r.AudioURL || "";
+  
+  const listen = smartLink
+    ? `<a href="${smartLink}"
+          target="_blank"
+          rel="noopener"
+          class="button">🎧 Listen in your app</a>`
+    : "";
+
 
   body.innerHTML = `
     ${meta ? `<div class="meta">${meta}</div>` : ""}
     ${desc}
-    ${play ? `<div class="actions">${play}</div>` : ""}
+    ${listen ? `<div class="actions">${listen}</div>` : ""}
   `;
 
   d.appendChild(body);
@@ -417,6 +427,7 @@ function sortWithNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
+
 
 
 
