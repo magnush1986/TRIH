@@ -82,8 +82,17 @@ function buildFilterOptions(rows) {
   rows.forEach(r => {
     const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
     if (y) years.add(String(y));
-    r.Period.forEach(p => periods.add(p));
-    r.Region.forEach(g => regions.add(g));
+    if (r.Period.length) {
+      r.Period.forEach(p => periods.add(p));
+    } else {
+      periods.add("No period assigned");
+    }
+    
+    if (r.Region.length) {
+      r.Region.forEach(g => regions.add(g));
+    } else {
+      regions.add("No region assigned");
+    }
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -219,8 +228,16 @@ function applyAndRender() {
       const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : "";
       if (!years.has(y)) return false;
     }
-    if (periods.size && !r.Period.some(tag => periods.has(tag))) return false;
-    if (regions.size && !r.Region.some(tag => regions.has(tag))) return false;
+    if (periods.size) {
+        const tags = r.Period.length ? r.Period : ["No period assigned"];
+        if (!tags.some(tag => periods.has(tag))) return false;
+      }
+      
+      // Region
+      if (regions.size) {
+        const tags = r.Region.length ? r.Region : ["No region assigned"];
+        if (!tags.some(tag => regions.has(tag))) return false;
+      }
     return true;
   });
 
@@ -389,5 +406,6 @@ function parseTags(v) {
     .map(x => x.trim())
     .filter(Boolean);
 }
+
 
 
