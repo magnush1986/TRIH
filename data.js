@@ -257,6 +257,7 @@ function applyAndRender() {
   });
 
   state.filtered = rows;
+  rebuildFilterOptionsCascade(rows);
 
   renderChips();
   renderStats(rows);
@@ -450,6 +451,68 @@ function megaphoneGuidToPodlink(guid) {
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 }
+
+function rebuildFilterOptionsCascade(rows) {
+  const years = new Set();
+  const periods = new Set();
+  const regions = new Set();
+
+  rows.forEach(r => {
+    const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
+    if (y) years.add(String(y));
+
+    const p = r.Period.length ? r.Period : ["No period assigned"];
+    p.forEach(x => periods.add(x));
+
+    const g = r.Region.length ? r.Region : ["No region assigned"];
+    g.forEach(x => regions.add(x));
+  });
+
+  const map = {
+    year: arrDesc([...years]),
+    period: sortWithNoneLast([...periods]),
+    region: sortWithNoneLast([...regions])
+  };
+
+  ["year","period","region"].forEach(key => {
+    const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+    if (!panel) return;
+
+    const inner = panel.querySelector(".filter-dropdown-inner");
+    if (!inner) return;
+
+    // Keep previously checked values
+    const activeSet =
+      key === "year" ? state.filters.years :
+      key === "period" ? state.filters.periods :
+                         state.filters.regions;
+
+    inner.innerHTML = "";
+
+    map[key].forEach(v => {
+      const opt = document.createElement("label");
+      opt.className = "filter-option";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = v;
+
+      // Keep checked status if it still exists
+      if (activeSet.has(v)) input.checked = true;
+
+      input.addEventListener("change", () => {
+        if (input.checked) activeSet.add(v);
+        else activeSet.delete(v);
+        applyAndRender();
+      });
+
+      opt.appendChild(input);
+      opt.appendChild(document.createTextNode(v));
+      inner.appendChild(opt);
+    });
+  });
+}
+
 
 
 
