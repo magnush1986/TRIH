@@ -531,6 +531,23 @@ details[open] .toggle-icon {
   text-align: center;
 }
 
+.group-toggle {
+  margin: 10px 0 16px 0;
+  font-size: 14px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-toggle select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 14px;
+}
+
 
 
 
