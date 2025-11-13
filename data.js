@@ -604,7 +604,7 @@ function renderGroupsByPeriod(rows) {
   keys.forEach(key => {
     const section = document.createElement("section");
     section.className = "year-group";
-    section.innerHTML = `<h2 class="year-heading">📆 ${stripPrefix(key)}</h2>`;
+    section.innerHTML = `<h2 class="year-heading">⏳ ${stripPrefix(key)}</h2>`;
 
     groups[key]
       .sort((a, b) => b.PublishDate - a.PublishDate)
