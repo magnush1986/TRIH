@@ -458,11 +458,6 @@ details[open] .toggle-icon {
   justify-content: space-between;
 }
 
-/* Collapsible Contribute Box */
-.contribute {
-  margin: 1.5rem auto;
-  max-width: 680px;
-}
 
 .contribute-details {
   border: 1px solid #e1e1e1;
@@ -535,6 +530,7 @@ details[open] .toggle-icon {
   margin-top: 8px;
   text-align: center;
 }
+
 
 
 
