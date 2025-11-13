@@ -152,21 +152,37 @@ function wirePillButtons() {
       const key = pill.dataset.filter;
       const panel = panels.find(p => p.dataset.filter === key);
       const isActive = pill.classList.contains("active");
-
-      closeAll();
-
-      if (!isActive && panel) {
-        pill.classList.add("active");
-        panel.classList.add("open");
-
-        const rect = pill.getBoundingClientRect();
-        const hostRect = document.getElementById("filterDropdownHost").getBoundingClientRect();
-        const left = rect.left - hostRect.left;
-        panel.style.left = left + "px";
-        panel.style.top = "0px";
+  
+      // ❌ Remove automatic close when selecting options
+      // Instead: only close if clicking pill again or outside
+  
+      if (isActive) {
+        // Close if clicking the same pill again
+        pill.classList.remove("active");
+        panel.classList.remove("open");
+        return;
       }
+  
+      // Close other panels
+      pills.forEach(p => p.classList.remove("active"));
+      panels.forEach(p => p.classList.remove("open"));
+  
+      // Open this panel
+      pill.classList.add("active");
+      panel.classList.add("open");
+  
+      const rect = pill.getBoundingClientRect();
+      const hostRect = document.getElementById("filterDropdownHost").getBoundingClientRect();
+      panel.style.left = (rect.left - hostRect.left) + "px";
+      panel.style.top = "0px";
     });
   });
+
+// ✔ Keep panel open when clicking inside it
+panels.forEach(panel => {
+  panel.addEventListener("click", (e) => e.stopPropagation());
+});
+
 
   document.addEventListener("click", () => {
     closeAll();
@@ -365,3 +381,4 @@ function monthLabel(m) {
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
