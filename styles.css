@@ -655,6 +655,13 @@ details[open] .toggle-icon {
   text-align: center;
 }
 
+.footer-disclaimer,
+.footer-disclaimer * {
+  font-family: 'Inter', sans-serif !important;
+}
 
+.footer-credit {
+  font-family: 'Inter', sans-serif !important;
+}
 
 
