@@ -156,10 +156,20 @@ function buildFilterOptions(rows) {
 function wirePillButtons() {
   const pills = Array.from(document.querySelectorAll(".pill-button"));
   const panels = Array.from(document.querySelectorAll(".filter-dropdown"));
+  const host = document.getElementById("filterDropdownHost");
 
   function closeAll() {
     pills.forEach(p => p.classList.remove("active"));
     panels.forEach(p => p.classList.remove("open"));
+
+    // 🆕 Flytta tillbaka panelerna till host när allt stängs
+    panels.forEach(p => {
+      host.appendChild(p);
+      p.style.left = "";
+      p.style.top = "";
+      p.style.position = "";
+      p.style.width = "";
+    });
   }
 
   pills.forEach(pill => {
@@ -168,38 +178,39 @@ function wirePillButtons() {
       const key = pill.dataset.filter;
       const panel = panels.find(p => p.dataset.filter === key);
       const isActive = pill.classList.contains("active");
-  
-      // ❌ Remove automatic close when selecting options
-      // Instead: only close if clicking pill again or outside
-  
+
       if (isActive) {
-        // Close if clicking the same pill again
         pill.classList.remove("active");
         panel.classList.remove("open");
+        closeAll(); 
         return;
       }
-  
-      // Close other panels
-      pills.forEach(p => p.classList.remove("active"));
-      panels.forEach(p => p.classList.remove("open"));
-  
-      // Open this panel
+
+      // Stäng alla andra öppna paneler
+      closeAll();
+
+      // Markera denna pill som aktiv
       pill.classList.add("active");
       panel.classList.add("open");
-  
-      const rect = pill.getBoundingClientRect();
-      const hostRect = document.getElementById("filterDropdownHost").getBoundingClientRect();
-      panel.style.left = (rect.left - hostRect.left) + "px";
-      panel.style.top = "0px";
+
+      // 🆕 Flytta panelen in i samma wrapper som pillen
+      const wrapper = pill.closest(".pill-button-wrapper") || pill.parentElement;
+      wrapper.appendChild(panel);
+
+      // 🆕 Positionera panel precis under pillen
+      panel.style.position = "absolute";
+      panel.style.left = "0px";
+      panel.style.top = "100%";
+      panel.style.width = "max-content";
     });
   });
 
-// ✔ Keep panel open when clicking inside it
-panels.forEach(panel => {
-  panel.addEventListener("click", (e) => e.stopPropagation());
-});
+  // Tillåt klick inne i panelen utan att stänga den
+  panels.forEach(panel => {
+    panel.addEventListener("click", (e) => e.stopPropagation());
+  });
 
-
+  // Klick utanför → stäng alla
   document.addEventListener("click", () => {
     closeAll();
   });
