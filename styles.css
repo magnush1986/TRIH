@@ -397,4 +397,42 @@ details[open] .toggle-icon {
   }
 }
 
+/* Listen row */
+.listen-row {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Text-only pills */
+.listen-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #f4f4f4;
+  color: #333;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.listen-pill:hover {
+  background: #e9e9e9;
+  border-color: #bbb;
+}
+
+/* Dark mode friendly */
+@media (prefers-color-scheme: dark) {
+  .listen-pill {
+    background: #333;
+    color: #eee;
+    border-color: #555;
+  }
+  .listen-pill:hover {
+    background: #444;
+    border-color: #777;
+  }
+}
+
 
