@@ -332,13 +332,7 @@ details[open] .toggle-icon {
 /* --------------------------------------------------
    Contribute Section
 -------------------------------------------------- */
-
-.contribute {
-  margin: 2.5rem 0 2rem;
-  display: flex;
-  justify-content: center;
-}
-
+/*
 .contribute-card {
   background: #ffffff;
   border: 1px solid #e6e6e6;
@@ -365,7 +359,7 @@ details[open] .toggle-icon {
   line-height: 1.45;
   color: #333;
 }
-
+*/
 .contribute-text strong {
   font-weight: 600;
 }
@@ -379,11 +373,11 @@ details[open] .toggle-icon {
   border-bottom: 1px solid transparent;
   transition: all 0.18s ease;
 }
-
+/*
 .contribute-text a:hover {
   border-bottom-color: #b80000;
 }
-
+*/
 /* Mobile adjustments */
 @media (max-width: 600px) {
   .contribute-card {
@@ -391,12 +385,12 @@ details[open] .toggle-icon {
     text-align: left;
     padding: 1.2rem 1.3rem;
   }
-
+/*
   .contribute-icon {
     font-size: 1.7rem;
   }
 }
-
+*/
 /* Listen row */
 .listen-row {
   margin-top: 1rem;
@@ -516,5 +510,6 @@ details[open] .toggle-icon {
 .footer-official a:hover {
   text-decoration: underline;
 }
+
 
 
