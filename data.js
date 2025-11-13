@@ -100,9 +100,10 @@ function buildFilterOptions(rows) {
 
   const dataMap = {
     year: arrDesc([...years]),
-    period: arrAsc([...periods]),
-    region: arrAsc([...regions])
+    period: sortWithNoneLast([...periods]),
+    region: sortWithNoneLast([...regions])
   };
+
 
   ["year","period","region"].forEach(key => {
     const panel = document.createElement("div");
@@ -406,6 +407,18 @@ function parseTags(v) {
     .map(x => x.trim())
     .filter(Boolean);
 }
+
+function sortWithNoneLast(arr) {
+  return arr.sort((a, b) => {
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+    if (aIsNone && !bIsNone) return 1;   // "No ..." goes last
+    if (!aIsNone && bIsNone) return -1;
+    return a.localeCompare(b);
+  });
+}
+
+
 
 
 
