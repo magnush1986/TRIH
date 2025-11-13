@@ -548,6 +548,41 @@ details[open] .toggle-icon {
   font-size: 14px;
 }
 
+/* --- Group-by pills --- */
+.group-by-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem 0 1rem;
+  flex-wrap: wrap;
+}
+
+.group-by-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.group-pill {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 100px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.group-pill:hover {
+  background: #f2f2f2;
+}
+
+/* ⭐ ACTIVE = TRIH vinröd */
+.group-pill.active {
+  background: #8B1E3F;
+  border-color: #8B1E3F;
+  color: #fff;
+}
+
 
 
 
