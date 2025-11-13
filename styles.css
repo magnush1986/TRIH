@@ -280,6 +280,31 @@ details[open] .toggle-icon {
   font-size: 1.1rem;
 }
 
+/* --------------------------- */
+/* MOBILE FIX FOR FILTER PILLS */
+/* --------------------------- */
+@media (max-width: 600px) {
+
+  /* Gör att pill-raden kan brytas */
+  .pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    grid-template-columns: none; /* slår ut grid-layout */
+  }
+
+  /* Varje pill blir fullbredd */
+  .pill-wrapper,
+  .pill-button {
+    width: 100%;
+  }
+
+  /* Clear-knappen bryts till egen rad */
+  .filter.actions {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
 
 
 /* ----------------------------- */
@@ -581,6 +606,22 @@ details[open] .toggle-icon {
   background: #8B1E3F;
   border-color: #8B1E3F;
   color: #fff;
+}
+
+/* --------------------------- */
+/* MOBILE GROUP-BY PILL STACK  */
+/* --------------------------- */
+@media (max-width: 600px) {
+  .group-by-pills {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .group-pill {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 
