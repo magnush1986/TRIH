@@ -25,20 +25,27 @@
 
   <main class="layout">
 
-    <!-- ⭐ Intro section -->
-    <section class="intro">
-      <p>
-        The Rest Is History has guided listeners through countless stories from the past,
-        shedding light on everything from ancient civilisations to modern upheavals.
-      </p>
-      <p>
-        This Explorer helps you navigate the growing library of free episodes — to find
-        new interests, revisit old favourites, and enjoy the show in a new way.
-      </p>
-      <p class="tribute">
-        Created as a tribute to Tom and Dominic, whose work continues to make history
-        both approachable and endlessly engaging.
-      </p>
+    <!-- ⭐ Intro section — NOW COLLAPSIBLE -->
+    <section class="intro about-collapsed" id="aboutBox">
+      <button class="about-toggle" id="aboutToggle">
+        <span>About this site</span>
+        <span class="chevron">▸</span>
+      </button>
+
+      <div class="about-content">
+        <p>
+          The Rest Is History has guided listeners through countless stories from the past,
+          shedding light on everything from ancient civilisations to modern upheavals.
+        </p>
+        <p>
+          This Explorer helps you navigate the growing library of free episodes — to find
+          new interests, revisit old favourites, and enjoy the show in a new way.
+        </p>
+        <p class="tribute">
+          Created as a tribute to Tom and Dominic, whose work continues to make history
+          both approachable and endlessly engaging.
+        </p>
+      </div>
     </section>
 
     <!-- ⭐ NEW: Expanding contribute-box -->
@@ -109,7 +116,6 @@
       <button class="group-pill" data-group="region">Region</button>
     </div>
 
-
     <!-- Episode groups -->
     <section id="list" class="groups"></section>
   </main>
@@ -141,8 +147,19 @@
     </div>
   </footer>
 
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="data.js"></script>
+
+  <!-- ⭐ Script for collapsible intro -->
+  <script>
+    const aboutBox = document.getElementById("aboutBox");
+    const aboutToggle = document.getElementById("aboutToggle");
+
+    aboutToggle.addEventListener("click", () => {
+      aboutBox.classList.toggle("open");
+    });
+  </script>
+
 </body>
 </html>
-
