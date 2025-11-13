@@ -29,22 +29,15 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---------- Bootstrap / Data loading ----------
 function bootstrap() {
   const q = document.getElementById("q");
-  const yearFilter = document.getElementById("yearFilter");
-  const periodFilter = document.getElementById("periodFilter");
-  const regionFilter = document.getElementById("regionFilter");
   const clearBtn = document.getElementById("clearBtn");
 
   const debounced = debounce(() => { state.filters.q = (q.value || "").trim().toLowerCase(); applyAndRender(); }, 120);
   q.addEventListener("input", debounced);
 
-  yearFilter.addEventListener("change", () => setMultiSelect(yearFilter, state.filters.years));
-  periodFilter.addEventListener("change", () => setMultiSelect(periodFilter, state.filters.periods));
-  regionFilter.addEventListener("change", () => setMultiSelect(regionFilter, state.filters.regions));
   clearBtn.addEventListener("click", resetFilters);
 
   loadCsv(SHEET_CSV_URL)
     .then(rows => {
-      // Normalize + enrich
       const normalized = rows.map(r => ({
         Episode: parseEpisode(r["Episode"]),
         Title: (r["Title"] || "").trim(),
@@ -55,7 +48,6 @@ function bootstrap() {
         Period: (r["Period"] || "").trim()
       }));
 
-      // Keep only rows with a title (minimum viable)
       state.raw = normalized.filter(r => r.Title);
 
       buildFilterOptions(state.raw);
@@ -93,37 +85,105 @@ function buildFilterOptions(rows) {
     if (r.Region) regions.add(r.Region);
   });
 
-  fillMulti(document.getElementById("yearFilter"), arrDesc([...years]));
-  fillMulti(document.getElementById("periodFilter"), arrAsc([...periods]));
-  fillMulti(document.getElementById("regionFilter"), arrAsc([...regions]));
-}
+  const host = document.getElementById("filterDropdownHost");
+  host.innerHTML = "";
 
-function fillMulti(selectEl, values) {
-  selectEl.innerHTML = "";
-  values.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    selectEl.appendChild(opt);
+  const dataMap = {
+    year: arrDesc([...years]),
+    period: arrAsc([...periods]),
+    region: arrAsc([...regions])
+  };
+
+  ["year","period","region"].forEach(key => {
+    const panel = document.createElement("div");
+    panel.className = "filter-dropdown";
+    panel.dataset.filter = key;
+
+    const inner = document.createElement("div");
+    inner.className = "filter-dropdown-inner";
+    inner.id = key + "Options";
+
+    const values = dataMap[key];
+    values.forEach(v => {
+      const opt = document.createElement("label");
+      opt.className = "filter-option";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = v;
+
+      input.addEventListener("change", () => {
+        const set = key === "year" ? state.filters.years
+                 : key === "period" ? state.filters.periods
+                 : state.filters.regions;
+
+        if (input.checked) {
+          set.add(v);
+        } else {
+          set.delete(v);
+        }
+        applyAndRender();
+      });
+
+      opt.appendChild(input);
+      opt.appendChild(document.createTextNode(v));
+      inner.appendChild(opt);
+    });
+
+    panel.appendChild(inner);
+    host.appendChild(panel);
   });
+
+  wirePillButtons();
 }
 
-function setMultiSelect(selectEl, targetSet) {
-  targetSet.clear();
-  Array.from(selectEl.selectedOptions).forEach(opt => targetSet.add(opt.value));
-  applyAndRender();
+function wirePillButtons() {
+  const pills = Array.from(document.querySelectorAll(".pill-button"));
+  const panels = Array.from(document.querySelectorAll(".filter-dropdown"));
+
+  function closeAll() {
+    pills.forEach(p => p.classList.remove("active"));
+    panels.forEach(p => p.classList.remove("open"));
+  }
+
+  pills.forEach(pill => {
+    pill.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const key = pill.dataset.filter;
+      const panel = panels.find(p => p.dataset.filter === key);
+      const isActive = pill.classList.contains("active");
+
+      closeAll();
+
+      if (!isActive && panel) {
+        pill.classList.add("active");
+        panel.classList.add("open");
+
+        const rect = pill.getBoundingClientRect();
+        const hostRect = document.getElementById("filterDropdownHost").getBoundingClientRect();
+        const left = rect.left - hostRect.left;
+        panel.style.left = left + "px";
+        panel.style.top = "0px";
+      }
+    });
+  });
+
+  document.addEventListener("click", () => {
+    closeAll();
+  });
 }
 
 function resetFilters() {
   document.getElementById("q").value = "";
   state.filters.q = "";
-  ["yearFilter","periodFilter","regionFilter"].forEach(id => {
-    const el = document.getElementById(id);
-    Array.from(el.options).forEach(op => op.selected = false);
-  });
+
   state.filters.years.clear();
   state.filters.periods.clear();
   state.filters.regions.clear();
+
+  const allChecks = document.querySelectorAll(".filter-dropdown input[type='checkbox']");
+  allChecks.forEach(c => c.checked = false);
+
   applyAndRender();
 }
 
@@ -134,25 +194,20 @@ function applyAndRender() {
   let rows = state.raw.slice();
 
   rows = rows.filter(r => {
-    // text search
     if (q) {
       const hay = `${r.Title} ${r.Description} ${r.Period} ${r.Region}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    // multi Year
     if (years.size) {
       const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : "";
       if (!years.has(y)) return false;
     }
-    // multi Period
     if (periods.size && !periods.has(r.Period)) return false;
-    // multi Region
     if (regions.size && !regions.has(r.Region)) return false;
 
     return true;
   });
 
-  // Sort for grouping: Year desc → Month desc → Episode desc → Title
   rows.sort((a, b) => {
     const ya = a.PublishDate ? a.PublishDate.getFullYear() : 0;
     const yb = b.PublishDate ? b.PublishDate.getFullYear() : 0;
@@ -180,11 +235,19 @@ function renderChips() {
 
   const parts = [];
   if (q) parts.push(chip("Search", q, () => { document.getElementById("q").value=""; state.filters.q=""; applyAndRender(); }));
-  years.forEach(v => parts.push(chip("Year", v, () => { years.delete(v); selectRemove("yearFilter", v); applyAndRender(); })));
-  periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); selectRemove("periodFilter", v); applyAndRender(); })));
-  regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); selectRemove("regionFilter", v); applyAndRender(); })));
+  years.forEach(v => parts.push(chip("Year", v, () => { years.delete(v); uncheck("year", v); applyAndRender(); })));
+  periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); uncheck("period", v); applyAndRender(); })));
+  regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); uncheck("region", v); applyAndRender(); })));
 
   parts.forEach(el => chipBox.appendChild(el));
+}
+
+function uncheck(key, value) {
+  const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+  if (!panel) return;
+  Array.from(panel.querySelectorAll("input")).forEach(i => {
+    if (i.value === value) i.checked = false;
+  });
 }
 
 function chip(label, value, onRemove) {
@@ -193,11 +256,6 @@ function chip(label, value, onRemove) {
   el.innerHTML = `<span class="chip-label">${label}:</span> ${escapeHtml(value)} <button type="button" class="chip-x" aria-label="Remove">×</button>`;
   el.querySelector(".chip-x").addEventListener("click", onRemove);
   return el;
-}
-
-function selectRemove(selectId, value) {
-  const sel = document.getElementById(selectId);
-  Array.from(sel.options).forEach(op => { if (op.value === value) op.selected = false; });
 }
 
 function renderStats(rows) {
@@ -209,7 +267,6 @@ function renderGroups(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  // Group Year → Month
   const byYear = groupBy(rows, r => r.PublishDate ? r.PublishDate.getFullYear() : "Unknown");
   const yearKeys = Object.keys(byYear).sort((a,b) => Number(b) - Number(a));
 
@@ -241,22 +298,19 @@ function renderEpisodeCard(r) {
   d.className = "episode-card";
 
   const epNum = (r.Episode != null && !isNaN(r.Episode)) ? `${r.Episode}. ` : "";
-  const cleanTitle = r.Title.replace(/^\d+\.\s*/, ""); // remove leading "123. "
+  const cleanTitle = r.Title.replace(/^\d+\.\s*/, "");
   const title = `${epNum}${cleanTitle}`;
-  const dateStr = r.PublishDate ? r.PublishDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "";
+  const dateStr = r.PublishDate ? r.PublishDate.toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' }) : "";
 
   const summary = document.createElement("summary");
   summary.className = "episode-summary";
-  
   summary.innerHTML = `
     <svg class="toggle-icon" viewBox="0 0 24 24">
       <path d="M8 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2"/>
     </svg>
     <span>${escapeHtml(title)}</span>
   `;
-  
   d.appendChild(summary);
-
 
   const body = document.createElement("div");
   body.className = "episode-body";
@@ -311,4 +365,3 @@ function monthLabel(m) {
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
