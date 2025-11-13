@@ -630,7 +630,30 @@ details[open] .toggle-icon {
   }
 }
 
+/* Footer additions */
+.footer-disclaimer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  text-align: center;
+}
 
+.footer-disclaimer .disc-icon {
+  font-size: 14px;
+  margin-right: 6px;
+  opacity: 0.75;
+}
+
+.footer-credit {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #8B1E3F;   /* TRIH vinröd */
+  font-weight: 600;
+  text-align: center;
+}
 
 
 
