@@ -163,4 +163,99 @@ details[open] .toggle-icon {
   opacity: 1;
 }
 
+/* Pills row */
+.pills-row {
+  grid-template-columns: repeat(3, auto) auto;
+  align-items: center;
+}
+
+.pill-wrapper {
+  position: relative;
+}
+
+/* Pill buttons */
+.pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pill-button .pill-arrow {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.pill-button.active {
+  border-color: var(--brand);
+  background: var(--brand-weak);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Dropdown container under pills */
+#filterDropdownHost {
+  position: relative;
+  margin-top: 4px;
+}
+
+/* Panel per filter */
+.filter-dropdown {
+  position: absolute;
+  z-index: 20;
+  min-width: 180px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  display: none;
+}
+
+.filter-dropdown.open {
+  display: block;
+}
+
+.filter-dropdown-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.filter-option input[type="checkbox"] {
+  accent-color: var(--brand);
+}
+
+/* Mobilanpassning */
+@media (max-width: 700px) {
+  .pills-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 8px;
+  }
+  .filter.actions {
+    justify-self: end;
+  }
+  .filter-dropdown {
+    left: 0;
+    right: auto;
+    min-width: 70vw;
+  }
+}
+
 
