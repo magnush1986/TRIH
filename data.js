@@ -363,19 +363,19 @@ function renderEpisodeCard(r) {
   
   // Build smart links for multiple players
   let linksHtml = "";
-  if (r.GUID) {
-    const guid = encodeURIComponent(r.GUID);
-    const base = `https://pod.link/1530213570/episode/${guid}`;
-    linksHtml = `
-      <div class="listen-row">
-        <a class="listen-pill" href="${base}?app=applepodcasts" target="_blank" rel="noopener">Apple</a>
-        <a class="listen-pill" href="${base}?app=spotify" target="_blank" rel="noopener">Spotify</a>
-        <a class="listen-pill" href="${base}?app=overcast" target="_blank" rel="noopener">Overcast</a>
-        <a class="listen-pill" href="${base}" target="_blank" rel="noopener">Web</a>
-      </div>
-    `;
-  }
-
+    if (r.GUID) {
+      const podlinkGuid = megaphoneGuidToPodlink(r.GUID);
+      if (podlinkGuid) {
+        const url = `https://pod.link/1537788786/episode/${podlinkGuid}`;
+        linksHtml = `
+          <div class="listen-row">
+            <a class="listen-pill" href="${url}" target="_blank" rel="noopener">
+              🎧 Listen
+            </a>
+          </div>
+        `;
+      }
+    }
 
 
   body.innerHTML = `
@@ -438,10 +438,24 @@ function sortWithNoneLast(arr) {
   });
 }
 
+function megaphoneGuidToPodlink(guid) {
+  if (!guid) return null;
 
+  // 1. ta bort bindestreck
+  const hex = guid.replace(/-/g, "");
 
+  // 2. hex → bytes
+  const bytes = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.substring(i, i + 2), 16));
+  }
 
+  // 3. bytes → Base64
+  let b64 = btoa(String.fromCharCode(...bytes));
 
+  // 4. gör om till URL-safe Base64 (PodLink-format)
+  b64 = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
-
+  return b64;
+}
 
