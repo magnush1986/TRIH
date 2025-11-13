@@ -24,7 +24,7 @@
 
   <main class="layout">
 
-    <!-- ⭐ Full intro section -->
+    <!-- ⭐ Intro section -->
     <section class="intro">
       <p>
         The Rest Is History has guided listeners through countless stories from the past,
@@ -39,21 +39,23 @@
         both approachable and endlessly engaging.
       </p>
     </section>
-    <!-- End intro section -->
 
-    <!-- ⭐ Official TRIH link -->
-    <div class="official-link-box">
+    <!-- ⭐ Official link (unchanged except fixing URL) -->
+    <section class="official-link-box">
       <a href="https://www.therestishistory.com" target="_blank" rel="noopener">
         Visit the official The Rest Is History website →
       </a>
-    </div>
-    <!-- End official link -->
+    </section>
 
-    <!-- ⭐ Contribute box -->
+    <!-- ⭐ NEW: Expanding contribute-box with episode-card styling -->
     <section class="contribute">
-      <div class="contribute-card">
-        <div class="contribute-icon">📝</div>
-        <div class="contribute-text">
+      <details class="contribute-details">
+        <summary class="contribute-summary">
+          <span class="contribute-icon">📝</span>
+          <span>Contribute to tagging</span>
+        </summary>
+
+        <div class="contribute-expanded">
           Want to help improve the tagging?<br>
           You can update <strong>Region</strong> & <strong>Period</strong> directly in our shared community sheet:<br>
           <a href="https://docs.google.com/spreadsheets/d/1jrcaWI6z_Z-EAfeGwMOGywbafwv5wXPrVcKmUYp1JEw/edit?usp=drive_link"
@@ -61,13 +63,13 @@
             👉 Open the tagging sheet
           </a>
         </div>
-      </div>
+      </details>
     </section>
-    <!-- End contribute box -->
+    <!-- End contribute-box -->
 
     <section class="filters">
 
-      <!-- ✔️ Search bar -->
+      <!-- Search -->
       <div class="filters-row">
         <input id="q" type="search"
                placeholder="Search title, description, period or region…"
@@ -118,5 +120,3 @@
   <script src="data.js"></script>
 </body>
 </html>
-
-
