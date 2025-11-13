@@ -664,4 +664,30 @@ details[open] .toggle-icon {
   font-family: 'Inter', sans-serif !important;
 }
 
+.footer-disclaimer,
+.footer-disclaimer *,
+.footer-credit {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
 
+.footer-credit {
+  margin-top: 6px;
+  font-weight: 600;
+  color: #8B1E3F; /* TRIH-röd */
+}
+
+.footer-disclaimer {
+  margin-top: 16px;
+  padding: 0 18px;
+}
+
+.footer-disclaimer .info-icon {
+  font-size: 20px;
+  vertical-align: middle;
+  margin-right: 6px;
+  opacity: 0.7;
+}
