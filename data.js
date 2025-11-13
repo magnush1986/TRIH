@@ -441,21 +441,15 @@ function sortWithNoneLast(arr) {
 function megaphoneGuidToPodlink(guid) {
   if (!guid) return null;
 
-  // 1. ta bort bindestreck
-  const hex = guid.replace(/-/g, "");
+  // Base64 encode the GUID string as plain text (PodLink format)
+  let b64 = btoa(guid);
 
-  // 2. hex → bytes
-  const bytes = [];
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes.push(parseInt(hex.substring(i, i + 2), 16));
-  }
-
-  // 3. bytes → Base64
-  let b64 = btoa(String.fromCharCode(...bytes));
-
-  // 4. gör om till URL-safe Base64 (PodLink-format)
-  b64 = b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
-  return b64;
+  // Make it URL-safe (PodLink requirement)
+  return b64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
+
+
 
