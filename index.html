@@ -41,15 +41,30 @@
     </section>
     <!-- End intro section -->
 
+    <!-- ⭐ Contribute box -->
+    <section class="contribute">
+      <div class="contribute-card">
+        <div class="contribute-icon">📝</div>
+        <div class="contribute-text">
+          Want to help improve the tagging?<br>
+          You can update <strong>Region</strong> & <strong>Period</strong> directly in our shared community sheet:<br>
+          <a href="https://docs.google.com/spreadsheets/d/1jrcaWI6z_Z-EAfeGwMOGywbafwv5wXPrVcKmUYp1JEw/edit?usp=drive_link"
+             target="_blank" rel="noopener">
+            👉 Open the tagging sheet
+          </a>
+        </div>
+      </div>
+    </section>
+    <!-- End contribute box -->
+
     <section class="filters">
-      
-      <!-- ✔️ Search bar (required for data.js) -->
+
+      <!-- ✔️ Search bar -->
       <div class="filters-row">
         <input id="q" type="search"
                placeholder="Search title, description, period or region…"
                aria-label="Search episodes" />
       </div>
-      <!-- END search bar -->
 
       <div class="filters-row pills-row">
         <div class="pill-wrapper">
@@ -74,7 +89,7 @@
           <button id="clearBtn" type="button" class="button secondary">Clear</button>
         </div>
       </div>
-      
+
       <div id="filterDropdownHost"></div>
 
       <div class="filters-row chips" id="activeChips"></div>
