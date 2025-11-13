@@ -14,6 +14,7 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZC7Oawx
 const state = {
   raw: [],
   filtered: [],
+  groupBy: "date",   // ⭐ Default
   filters: {
     q: "",
     years: new Set(),
@@ -21,6 +22,7 @@ const state = {
     regions: new Set()
   }
 };
+
 
 document.addEventListener("DOMContentLoaded", () => {
   bootstrap();
@@ -35,9 +37,8 @@ function bootstrap() {
   q.addEventListener("input", debounced);
 
   clearBtn.addEventListener("click", resetFilters);
-
-  // ⭐ NEW: group-by listener
-document.getElementById("groupBy").addEventListener("change", applyAndRender);
+  
+  setupGroupByPills();
 
   loadCsv(SHEET_CSV_URL)
     .then(rows => {
@@ -204,6 +205,26 @@ panels.forEach(panel => {
   });
 }
 
+function setupGroupByPills() {
+  const pills = document.querySelectorAll(".group-pill");
+
+  pills.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // byt aktiv knapp
+      pills.forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+
+      // uppdatera state
+      state.groupBy = btn.dataset.group; // "date" | "period" | "region"
+
+      applyAndRender();
+    });
+  });
+
+  // Default aktiv
+  state.groupBy = "date";
+}
+
 function resetFilters() {
   document.getElementById("q").value = "";
   state.filters.q = "";
@@ -265,7 +286,7 @@ function applyAndRender() {
   renderChips();
   renderStats(rows);
   
-  const mode = document.getElementById("groupBy").value;
+  const mode = state.groupBy;
   if (mode === "date") {
     renderGroups(rows);            // befintlig år→månad
   } else if (mode === "period") {
@@ -625,6 +646,7 @@ function sortAlphaNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
+
 
 
 
