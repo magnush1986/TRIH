@@ -101,15 +101,14 @@
 
     <section id="stats" class="stats"></section>
 
-    <!-- ⭐ NEW: Group-by toggle -->
-    <div class="group-toggle">
-      <label for="groupBy">Group by:</label>
-      <select id="groupBy">
-        <option value="date" selected>Publish date</option>
-        <option value="period">Period</option>
-        <option value="region">Region</option>
-      </select>
+    <div class="group-by-pills">
+      <span class="group-by-label">Group episodes by:</span>
+    
+      <button class="group-pill active" data-group="date">Date</button>
+      <button class="group-pill" data-group="period">Period</button>
+      <button class="group-pill" data-group="region">Region</button>
     </div>
+
 
     <!-- Episode groups -->
     <section id="list" class="groups"></section>
@@ -131,3 +130,4 @@
   <script src="data.js"></script>
 </body>
 </html>
+
