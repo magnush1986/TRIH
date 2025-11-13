@@ -452,44 +452,50 @@ function megaphoneGuidToPodlink(guid) {
     .replace(/=+$/, "");
 }
 
-function rebuildFilterOptionsCascade(rows) {
-  const years = new Set();
-  const periods = new Set();
-  const regions = new Set();
+function rebuildFilterOptionsCascade() {
+  const { years, periods, regions } = state.filters;
+
+  // 1. Ta fram redan filtrerade rader
+  const rows = state.filtered;
+
+  // 2. Samla nya värden beroende på aktiva filters
+  const yearSet = new Set();
+  const periodSet = new Set();
+  const regionSet = new Set();
 
   rows.forEach(r => {
-    const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
-    if (y) years.add(String(y));
+    const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : null;
+    if (y) yearSet.add(y);
 
     const p = r.Period.length ? r.Period : ["No period assigned"];
-    p.forEach(x => periods.add(x));
+    p.forEach(v => periodSet.add(v));
 
     const g = r.Region.length ? r.Region : ["No region assigned"];
-    g.forEach(x => regions.add(x));
+    g.forEach(v => regionSet.add(v));
   });
 
-  const map = {
-    year: arrDesc([...years]),
-    period: sortWithNoneLast([...periods]),
-    region: sortWithNoneLast([...regions])
-  };
+  // 3. För varje dropdown – bygg bara om om det INTE är filtret som användaren valt
+  const dropdowns = [
+    { key: "year",    set: yearSet,    active: years.size > 0 },
+    { key: "period",  set: periodSet,  active: periods.size > 0 },
+    { key: "region",  set: regionSet,  active: regions.size > 0 },
+  ];
 
-  ["year","period","region"].forEach(key => {
+  dropdowns.forEach(({ key, set, active }) => {
+    // ❌ Hoppa över det filter som är aktivt (kaskadlogik men inte på sig själv)
+    if (active) return;
+
     const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
     if (!panel) return;
 
     const inner = panel.querySelector(".filter-dropdown-inner");
-    if (!inner) return;
-
-    // Keep previously checked values
-    const activeSet =
-      key === "year" ? state.filters.years :
-      key === "period" ? state.filters.periods :
-                         state.filters.regions;
-
     inner.innerHTML = "";
 
-    map[key].forEach(v => {
+    const sorted = key === "year"
+      ? [...set].sort((a, b) => Number(b) - Number(a))   // år: descending
+      : sortWithNoneLast([...set]);                      // period/region: alfabetiskt, "No…" sist
+
+    sorted.forEach(v => {
       const opt = document.createElement("label");
       opt.className = "filter-option";
 
@@ -497,13 +503,17 @@ function rebuildFilterOptionsCascade(rows) {
       input.type = "checkbox";
       input.value = v;
 
-      // Keep checked status if it still exists
-      if (activeSet.has(v)) input.checked = true;
+      // återställ tidigare val om det fanns
+      const owningSet = key === "year" ? years : key === "period" ? periods : regions;
+      input.checked = owningSet.has(v);
 
       input.addEventListener("change", () => {
-        if (input.checked) activeSet.add(v);
-        else activeSet.delete(v);
-        applyAndRender();
+        if (input.checked) {
+          owningSet.add(v);
+        } else {
+          owningSet.delete(v);
+        }
+        applyAndRender(); // trigga om-rendering + rebuild
       });
 
       opt.appendChild(input);
@@ -512,6 +522,8 @@ function rebuildFilterOptionsCascade(rows) {
     });
   });
 }
+
+
 
 
 
