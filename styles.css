@@ -333,12 +333,10 @@ details[open] .toggle-icon {
    Contribute Section
 -------------------------------------------------- */
 .contribute {
-  margin: 1.5rem 0 2rem 0;   /* Ingen auto = inte centrerad */
-  max-width: 680px;          /* Behåll maxbredd om du vill */
-  padding: 0;                /* Ingen extra horisontell padding */
+  margin: 1.5rem 0 2rem 0;   /* vänsterställd */
+  max-width: 800px;          /* samma som intro-boxen ovan */
+  padding: 0;
 }
-
-
 
 .contribute-card {
   background: #ffffff;
@@ -484,11 +482,22 @@ details[open] .toggle-icon {
   display: none;
 }
 
+.contribute-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* text vänster, pil höger */
+}
+
 .contribute-summary::after {
   content: "▸";
-  float: right;
+  font-size: 1.2rem;        /* större pil */
+  opacity: 0.55;
+  margin-left: 8px;
   transition: transform 0.25s;
-  opacity: 0.6;
+}
+
+.contribute-details[open] .contribute-summary::after {
+  transform: rotate(90deg);
 }
 
 .contribute-details[open] .contribute-summary::after {
@@ -526,6 +535,7 @@ details[open] .toggle-icon {
   margin-top: 8px;
   text-align: center;
 }
+
 
 
 
