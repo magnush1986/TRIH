@@ -768,3 +768,50 @@ details[open] .toggle-icon {
     font-size: 0.95rem;
   }
 }
+
+/* Collapsed intro box */
+.about-collapsed {
+  max-width: 800px;
+  margin: 1.5rem auto 2rem;
+  border-left: 4px solid #b71234;
+  border-radius: 6px;
+  padding: 0;
+  background: #faf9f9;
+}
+
+/* The toggle bar */
+.about-toggle {
+  width: 100%;
+  background: #fff;
+  border: 0;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.about-toggle .chevron {
+  font-size: 1.2rem;
+  opacity: 0.6;
+  transition: transform 0.2s;
+}
+
+/* Content hidden by default */
+.about-content {
+  display: none;
+  padding: 16px 16px 20px;
+  background: #faf9f9;
+}
+
+/* When expanded */
+.about-collapsed.open .about-content {
+  display: block;
+}
+
+.about-collapsed.open .chevron {
+  transform: rotate(90deg);
+}
