@@ -454,4 +454,9 @@ details[open] .toggle-icon {
   text-decoration: underline;
 }
 
+.pill-button {
+  min-width: 110px;
+  justify-content: space-between;
+}
+
 
