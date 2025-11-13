@@ -437,8 +437,12 @@ function parseTags(v) {
   if (!v) return [];
   return String(v)
     .split(",")
-    .map(x => x.trim())
+    .map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
     .filter(Boolean);
+}
+
+function stripPrefix(v) {
+  return v.replace(/^\d+\.\s*/, "");
 }
 
 function sortWithNoneLast(arr) {
@@ -447,7 +451,9 @@ function sortWithNoneLast(arr) {
     const bIsNone = b.startsWith("No ");
     if (aIsNone && !bIsNone) return 1;   // "No ..." goes last
     if (!aIsNone && bIsNone) return -1;
-    return a.localeCompare(b);
+    const aa = stripPrefix(a);
+    const bb = stripPrefix(b);
+    return bb.localeCompare(aa, undefined, { numeric: true });
   });
 }
 
@@ -553,7 +559,7 @@ function renderGroupsByPeriod(rows) {
   keys.forEach(key => {
     const section = document.createElement("section");
     section.className = "year-group";
-    section.innerHTML = `<h2 class="year-heading">📆 ${key}</h2>`;
+    section.innerHTML = `<h2 class="year-heading">📆 ${stripPrefix(key)}</h2>`;
 
     groups[key]
       .sort((a, b) => b.PublishDate - a.PublishDate)
@@ -589,6 +595,7 @@ function renderGroupsByRegion(rows) {
     host.appendChild(section);
   });
 }
+
 
 
 
