@@ -624,6 +624,12 @@ details[open] .toggle-icon {
   }
 }
 
+@media (max-width: 600px) {
+  .pill-wrapper {
+    position: relative;
+  }
+}
+
 
 
 
