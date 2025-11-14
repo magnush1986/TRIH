@@ -934,4 +934,60 @@ details[open] .toggle-icon {
   color: #ffffff !important;  /* gör all text ljus */
 }
 
+/* Default (mobile): center logo + text */
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 
+.brand .cover {
+  width: 120px;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+  max-width: 320px;
+}
+
+/* Desktop layout */
+@media (min-width: 700px) {
+  .brand {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+  }
+
+  .brand .cover {
+    width: 80px;
+    margin-right: 1rem;
+    margin-bottom: 0;
+  }
+
+  .brand > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+/* Hide title + subtitle on mobile */
+.title,
+.subtitle {
+  display: none;
+}
+
+/* Show again on desktop */
+@media (min-width: 700px) {
+  .title,
+  .subtitle {
+    display: block;
+  }
+}
