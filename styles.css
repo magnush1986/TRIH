@@ -877,3 +877,61 @@ details[open] .toggle-icon {
   filter: brightness(10);
 }
 
+/* =========================================================
+   Contribute-header: ikon + text vänster, pilen till höger
+   ========================================================= */
+
+.contribute-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;  /* allt börjar på vänster sida */
+  gap: 10px;                    /* mellan ikon och text */
+}
+
+/* Texten ska inte centreras */
+.contribute-summary span {
+  text-align: left;
+}
+
+/* Flytta pilen till höger */
+.contribute-summary::after {
+  margin-left: auto;            /* skickar pilen längst till höger */
+  opacity: 0.55;
+}
+
+/* =========================================================
+   TRIH FOOTER — VINRÖD BAKGRUND + LJUS TEXT
+   ========================================================= */
+
+.site-footer {
+  background: #8B1E3F;     /* samma vinröda som headern */
+  color: #ffffff;
+  border-top: none;
+  padding: 40px 16px;
+}
+
+.site-footer a {
+  color: #ffffff;
+  opacity: 0.9;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-community,
+.footer-official,
+.footer-disclaimer,
+.footer-credit {
+  color: #ffffff !important;  /* gör all text ljus */
+}
+
+
