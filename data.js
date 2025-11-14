@@ -616,9 +616,10 @@ function renderGroupsByPeriod(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r => 
-    r.Period.length ? r.Period.join(", ") : "No period assigned"
+  const groups = groupByMulti(rows, r =>
+    r.Period.length ? r.Period : ["No period assigned"]
   );
+
 
   const keys = Object.keys(groups).sort((a, b) => {
     const aIsNone = a.startsWith("No ");
@@ -652,9 +653,10 @@ function renderGroupsByRegion(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r => 
-    r.Region.length ? r.Region.join(", ") : "No region assigned"
+  const groups = groupByMulti(rows, r =>
+    r.Region.length ? r.Region : ["No region assigned"]
   );
+
 
   const keys = Object.keys(groups).sort((a, b) => {
     const aIsNone = a.startsWith("No ");
@@ -685,8 +687,8 @@ function renderGroupsByTopic(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r => 
-    r.Topic && r.Topic.length ? r.Topic.join(", ") : "No topic assigned"
+  const groups = groupByMulti(rows, r =>
+    r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"]
   );
 
   const keys = Object.keys(groups).sort((a, b) => {
@@ -736,4 +738,5 @@ function groupByMulti(rows, getKeys) {
   });
   return map;
 }
+
 
