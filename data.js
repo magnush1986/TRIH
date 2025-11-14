@@ -616,7 +616,7 @@ function renderGroupsByPeriod(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupBy(rows, r => 
+  const groups = groupByMulti(rows, r => 
     r.Period.length ? r.Period.join(", ") : "No period assigned"
   );
 
@@ -652,7 +652,7 @@ function renderGroupsByRegion(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupBy(rows, r => 
+  const groups = groupByMulti(rows, r => 
     r.Region.length ? r.Region.join(", ") : "No region assigned"
   );
 
@@ -685,7 +685,7 @@ function renderGroupsByTopic(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupBy(rows, r => 
+  const groups = groupByMulti(rows, r => 
     r.Topic && r.Topic.length ? r.Topic.join(", ") : "No topic assigned"
   );
 
@@ -724,3 +724,16 @@ function sortAlphaNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
+
+function groupByMulti(rows, getKeys) {
+  const map = {};
+  rows.forEach(r => {
+    const keys = getKeys(r);
+    keys.forEach(k => {
+      const key = String(k);
+      (map[key] ||= []).push(r);
+    });
+  });
+  return map;
+}
+
