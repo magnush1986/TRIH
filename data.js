@@ -1,15 +1,15 @@
 /**
  * TRIH Episode Explorer
  * - Loads CSV from Google Sheets
- * - Free-text search + multi-select filters (Year, Period, Region)
- * - Grouping: Year → Month (desc)
+ * - Free-text search + multi-select filters (Year, Period, Region, Topic)
+ * - Grouping: Year → Month (desc) + Period + Region + Topic
  * - Collapsed episode cards; click to expand
  */
 
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZC7Oawx266328_YGXnVt5d970Jbca-XIsYkbQQfp78LKLOsuLqZjPyoAmeto9rrhojtEBi0zMLkOd/pub?output=csv";
 
 // Expected columns (use what exists; missing fields are handled):
-// Episode, Title, Publish Date, Description, Audio URL, Region, Period
+// Episode, Title, Publish Date, Description, Audio URL, Region, Period, Topic
 
 const state = {
   raw: [],
@@ -19,7 +19,8 @@ const state = {
     q: "",
     years: new Set(),
     periods: new Set(),
-    regions: new Set()
+    regions: new Set(),
+    topics: new Set()
   }
 };
 
@@ -50,8 +51,8 @@ function bootstrap() {
         Description: (r["Description"] || "").trim(),
         AudioURL: (r["Audio URL"] || "").trim(),
         Region: parseTags(r["Region"]),
-        Period: parseTags(r["Period"])
-
+        Period: parseTags(r["Period"]),
+        Topic: parseTags(r["Topic"])
       }));
 
       state.raw = normalized.filter(r => r.Title);
@@ -83,10 +84,12 @@ function buildFilterOptions(rows) {
   const years = new Set();
   const periods = new Set();
   const regions = new Set();
+  const topics = new Set();
 
   rows.forEach(r => {
     const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
     if (y) years.add(String(y));
+
     if (r.Period.length) {
       r.Period.forEach(p => periods.add(p));
     } else {
@@ -98,6 +101,12 @@ function buildFilterOptions(rows) {
     } else {
       regions.add("No region assigned");
     }
+
+    if (r.Topic && r.Topic.length) {
+      r.Topic.forEach(t => topics.add(t));
+    } else {
+      topics.add("No topic assigned");
+    }
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -106,11 +115,12 @@ function buildFilterOptions(rows) {
   const dataMap = {
     year: arrDesc([...years]),
     period: sortWithNoneLast([...periods]),
-    region: sortAlphaNoneLast([...regions])
+    region: sortAlphaNoneLast([...regions]),
+    topic: sortAlphaNoneLast([...topics])
   };
 
 
-  ["year","period","region"].forEach(key => {
+  ["year","period","region","topic"].forEach(key => {
     const panel = document.createElement("div");
     panel.className = "filter-dropdown";
     panel.dataset.filter = key;
@@ -131,7 +141,8 @@ function buildFilterOptions(rows) {
       input.addEventListener("change", () => {
         const set = key === "year" ? state.filters.years
                  : key === "period" ? state.filters.periods
-                 : state.filters.regions;
+                 : key === "region" ? state.filters.regions
+                 : state.filters.topics;
 
         if (input.checked) {
           set.add(v);
@@ -226,7 +237,7 @@ function setupGroupByPills() {
       btn.classList.add("active");
 
       // uppdatera state
-      state.groupBy = btn.dataset.group; // "date" | "period" | "region"
+      state.groupBy = btn.dataset.group; // "date" | "period" | "region" | "topic"
 
       applyAndRender();
     });
@@ -243,6 +254,7 @@ function resetFilters() {
   state.filters.years.clear();
   state.filters.periods.clear();
   state.filters.regions.clear();
+  state.filters.topics.clear();
 
   const allChecks = document.querySelectorAll(".filter-dropdown input[type='checkbox']");
   allChecks.forEach(c => c.checked = false);
@@ -252,13 +264,13 @@ function resetFilters() {
 
 // ---------- Apply filters + render ----------
 function applyAndRender() {
-  const { q, years, periods, regions } = state.filters;
+  const { q, years, periods, regions, topics } = state.filters;
 
   let rows = state.raw.slice();
 
   rows = rows.filter(r => {
     if (q) {
-      const hay = `${r.Title} ${r.Description} ${r.Period} ${r.Region}`.toLowerCase();
+      const hay = `${r.Title} ${r.Description} ${r.Period} ${r.Region} ${r.Topic}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     if (years.size) {
@@ -266,15 +278,22 @@ function applyAndRender() {
       if (!years.has(y)) return false;
     }
     if (periods.size) {
-        const tags = r.Period.length ? r.Period : ["No period assigned"];
-        if (!tags.some(tag => periods.has(tag))) return false;
-      }
+      const tags = r.Period.length ? r.Period : ["No period assigned"];
+      if (!tags.some(tag => periods.has(tag))) return false;
+    }
       
-      // Region
-      if (regions.size) {
-        const tags = r.Region.length ? r.Region : ["No region assigned"];
-        if (!tags.some(tag => regions.has(tag))) return false;
-      }
+    // Region
+    if (regions.size) {
+      const tags = r.Region.length ? r.Region : ["No region assigned"];
+      if (!tags.some(tag => regions.has(tag))) return false;
+    }
+
+    // Topic
+    if (topics.size) {
+      const tags = r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"];
+      if (!tags.some(tag => topics.has(tag))) return false;
+    }
+
     return true;
   });
 
@@ -301,23 +320,25 @@ function applyAndRender() {
   if (mode === "date") {
     renderGroups(rows);            // befintlig år→månad
   } else if (mode === "period") {
-    renderGroupsByPeriod(rows);    // NY funktion
-  } else {
-    renderGroupsByRegion(rows);    // NY funktion
+    renderGroupsByPeriod(rows);
+  } else if (mode === "region") {
+    renderGroupsByRegion(rows);
+  } else if (mode === "topic") {
+    renderGroupsByTopic(rows);
   }
-  
-  }
+}
 
 function renderChips() {
   const chipBox = document.getElementById("activeChips");
   chipBox.innerHTML = "";
-  const { years, periods, regions, q } = state.filters;
+  const { years, periods, regions, topics, q } = state.filters;
 
   const parts = [];
   if (q) parts.push(chip("Search", q, () => { document.getElementById("q").value=""; state.filters.q=""; applyAndRender(); }));
   years.forEach(v => parts.push(chip("Year", v, () => { years.delete(v); uncheck("year", v); applyAndRender(); })));
   periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); uncheck("period", v); applyAndRender(); })));
   regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); uncheck("region", v); applyAndRender(); })));
+  topics.forEach(v => parts.push(chip("Topic", v, () => { topics.delete(v); uncheck("topic", v); applyAndRender(); })));
 
   parts.forEach(el => chipBox.appendChild(el));
 }
@@ -398,7 +419,8 @@ function renderEpisodeCard(r) {
   const meta = [
     dateStr && `📅 ${dateStr}`,
     r.Period.length && `📆 Period: ${escapeHtml(r.Period.join(", "))}`,
-    r.Region.length && `🌍 Region: ${escapeHtml(r.Region.join(", "))}`
+    r.Region.length && `🌍 Region: ${escapeHtml(r.Region.join(", "))}`,
+    r.Topic && r.Topic.length && `🏷️ Topic: ${escapeHtml(r.Topic.join(", "))}`
   ].filter(Boolean).join(" · ");
 
   const desc = r.Description ? `<p class="desc">${escapeHtml(r.Description)}</p>` : "";
@@ -408,19 +430,19 @@ function renderEpisodeCard(r) {
   
   // Build smart links for multiple players
   let linksHtml = "";
-    if (r.GUID) {
-      const podlinkGuid = megaphoneGuidToPodlink(r.GUID);
-      if (podlinkGuid) {
-        const url = `https://pod.link/1537788786/episode/${podlinkGuid}`;
-        linksHtml = `
+  if (r.GUID) {
+    const podlinkGuid = megaphoneGuidToPodlink(r.GUID);
+    if (podlinkGuid) {
+      const url = `https://pod.link/1537788786/episode/${podlinkGuid}`;
+      linksHtml = `
           <div class="listen-row">
             <a class="listen-pill" href="${url}" target="_blank" rel="noopener">
               🎧 Listen
             </a>
           </div>
         `;
-      }
     }
+  }
 
 
   body.innerHTML = `
@@ -503,7 +525,7 @@ function megaphoneGuidToPodlink(guid) {
 }
 
 function rebuildFilterOptionsCascade() {
-  const { years, periods, regions } = state.filters;
+  const { years, periods, regions, topics } = state.filters;
 
   // 1. Ta fram redan filtrerade rader
   const rows = state.filtered;
@@ -512,6 +534,7 @@ function rebuildFilterOptionsCascade() {
   const yearSet = new Set();
   const periodSet = new Set();
   const regionSet = new Set();
+  const topicSet = new Set();
 
   rows.forEach(r => {
     const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : null;
@@ -522,6 +545,9 @@ function rebuildFilterOptionsCascade() {
 
     const g = r.Region.length ? r.Region : ["No region assigned"];
     g.forEach(v => regionSet.add(v));
+
+    const t = r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"];
+    t.forEach(v => topicSet.add(v));
   });
 
   // 3. För varje dropdown – bygg bara om om det INTE är filtret som användaren valt
@@ -529,6 +555,7 @@ function rebuildFilterOptionsCascade() {
     { key: "year",    set: yearSet,    active: years.size > 0 },
     { key: "period",  set: periodSet,  active: periods.size > 0 },
     { key: "region",  set: regionSet,  active: regions.size > 0 },
+    { key: "topic",   set: topicSet,   active: topics.size > 0 },
   ];
 
   dropdowns.forEach(({ key, set, active }) => {
@@ -546,8 +573,7 @@ function rebuildFilterOptionsCascade() {
         ? [...set].sort((a, b) => Number(b) - Number(a))
         : key === "period"
         ? sortWithNoneLast([...set])
-        : sortAlphaNoneLast([...set]);  // region
-                      // period/region: alfabetiskt, "No…" sist
+        : sortAlphaNoneLast([...set]);  // region/topic: alfabetiskt, "No…" sist
 
     sorted.forEach(v => {
       const opt = document.createElement("label");
@@ -558,7 +584,15 @@ function rebuildFilterOptionsCascade() {
       input.value = v;
 
       // återställ tidigare val om det fanns
-      const owningSet = key === "year" ? years : key === "period" ? periods : regions;
+      const owningSet =
+        key === "year"
+          ? years
+          : key === "period"
+          ? periods
+          : key === "region"
+          ? regions
+          : topics;
+
       input.checked = owningSet.has(v);
 
       input.addEventListener("change", () => {
@@ -647,6 +681,39 @@ function renderGroupsByRegion(rows) {
   });
 }
 
+function renderGroupsByTopic(rows) {
+  const host = document.getElementById("list");
+  host.innerHTML = "";
+
+  const groups = groupBy(rows, r => 
+    r.Topic && r.Topic.length ? r.Topic.join(", ") : "No topic assigned"
+  );
+
+  const keys = Object.keys(groups).sort((a, b) => {
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+  
+    // Always place "No topic assigned" last
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+  
+    // Alphabetical sort for topics
+    return a.localeCompare(b);
+  });
+
+  keys.forEach(key => {
+    const section = document.createElement("section");
+    section.className = "year-group";
+    section.innerHTML = `<h2 class="year-heading">🏷️ ${key}</h2>`;
+
+    groups[key]
+      .sort((a, b) => b.PublishDate - a.PublishDate)
+      .forEach(r => section.appendChild(renderEpisodeCard(r)));
+
+    host.appendChild(section);
+  });
+}
+
 function sortAlphaNoneLast(arr) {
   return arr.sort((a, b) => {
     const aIsNone = a.startsWith("No ");
@@ -657,11 +724,3 @@ function sortAlphaNoneLast(arr) {
     return a.localeCompare(b);
   });
 }
-
-
-
-
-
-
-
-
