@@ -616,9 +616,12 @@ function renderGroupsByPeriod(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r =>
-    r.Period.length ? r.Period : ["No period assigned"]
+  const groups = groupByMulti(
+    rows,
+    r => r.Period.length ? r.Period : ["No period assigned"],
+    activeFilters.period
   );
+
 
 
   const keys = Object.keys(groups).sort((a, b) => {
@@ -653,8 +656,10 @@ function renderGroupsByRegion(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r =>
-    r.Region.length ? r.Region : ["No region assigned"]
+  const groups = groupByMulti(
+    rows,
+    r => r.Region.length ? r.Region : ["No region assigned"],
+    activeFilters.region
   );
 
 
@@ -687,8 +692,10 @@ function renderGroupsByTopic(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
-  const groups = groupByMulti(rows, r =>
-    r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"]
+  const groups = groupByMulti(
+    rows,
+    r => r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"],
+    activeFilters.topic 
   );
 
   const keys = Object.keys(groups).sort((a, b) => {
@@ -727,10 +734,16 @@ function sortAlphaNoneLast(arr) {
   });
 }
 
-function groupByMulti(rows, getKeys) {
+function groupByMulti(rows, getKeys, activeFilters = null) {
   const map = {};
   rows.forEach(r => {
-    const keys = getKeys(r);
+    let keys = getKeys(r);
+
+    // STRICT MODE: Om filter är aktivt → behåll endast matchande keys
+    if (activeFilters && activeFilters.length) {
+      keys = keys.filter(k => activeFilters.includes(k));
+    }
+
     keys.forEach(k => {
       const key = String(k);
       (map[key] ||= []).push(r);
@@ -738,5 +751,6 @@ function groupByMulti(rows, getKeys) {
   });
   return map;
 }
+
 
 
