@@ -821,3 +821,10 @@ details[open] .toggle-icon {
   max-width: 900px;       /* samma bredd som layout */
   margin: 0 auto;         /* centrera på desktop */
 }
+
+/* Make "About this site" align with the rest of the content in .layout */
+.layout > .intro.about-collapsed {
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
