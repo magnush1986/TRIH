@@ -701,6 +701,7 @@ details[open] .toggle-icon {
   margin-bottom: 10px;
 }
 
+
 /* ABOUT BOX – collapsible */
 .about-box {
   border-left: 4px solid #8B1E3F;  /* TRIH-vinröd */
@@ -814,4 +815,9 @@ details[open] .toggle-icon {
 
 .about-collapsed.open .chevron {
   transform: rotate(90deg);
+}
+
+.intro {
+  max-width: 900px;       /* samma bredd som layout */
+  margin: 0 auto;         /* centrera på desktop */
 }
