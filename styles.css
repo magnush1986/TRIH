@@ -828,3 +828,11 @@ details[open] .toggle-icon {
   margin-left: 0;
   margin-right: 0;
 }
+
+/* Make Contribute section full-width inside .layout */
+.layout .contribute {
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
