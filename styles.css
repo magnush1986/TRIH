@@ -978,16 +978,14 @@ details[open] .toggle-icon {
   }
 }
 
-/* Hide title + subtitle on mobile */
-.title,
-.subtitle {
+/* Hide title on mobile */
+.title {
   display: none;
 }
 
 /* Show again on desktop */
 @media (min-width: 700px) {
-  .title,
-  .subtitle {
+  .title {
     display: block;
   }
 }
