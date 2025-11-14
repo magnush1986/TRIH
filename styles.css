@@ -989,3 +989,8 @@ details[open] .toggle-icon {
     display: block;
   }
 }
+
+/* Make subtitle visible again on mobile */
+.subtitle {
+  display: block !important;
+}
