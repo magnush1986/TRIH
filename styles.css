@@ -836,3 +836,44 @@ details[open] .toggle-icon {
   margin-right: 0;
 }
 
+/* =========================================================
+   TRIH HEADER — VINRÖD BAKGRUND + LJUS TEXT
+   (Drop-in block, påverkar endast headern)
+   ========================================================= */
+
+.site-header {
+  background: #8B1E3F; /* TRIH vinröd */
+  border-bottom: none;
+  color: #fff;
+  padding: 20px 0;
+}
+
+.header-inner {
+  color: #fff;
+}
+
+.site-header .title,
+.site-header .subtitle {
+  color: #fff !important;
+}
+
+.site-header .subtitle {
+  opacity: 0.85; /* svagare kontrast */
+}
+
+.brand {
+  color: #fff;
+}
+
+/* Gör omslagsbilden tydlig mot mörk bakgrund */
+.cover {
+  border: 2px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 12px;
+}
+
+/* Liten förbättring: vit ikon om du lägger till ikon i framtiden */
+.site-header svg,
+.site-header img.icon {
+  filter: brightness(10);
+}
+
