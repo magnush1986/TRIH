@@ -619,7 +619,7 @@ function renderGroupsByPeriod(rows) {
   const groups = groupByMulti(
     rows,
     r => r.Period.length ? r.Period : ["No period assigned"],
-    activeFilters.period
+    [...state.filters.periods]
   );
 
 
@@ -659,7 +659,7 @@ function renderGroupsByRegion(rows) {
   const groups = groupByMulti(
     rows,
     r => r.Region.length ? r.Region : ["No region assigned"],
-    activeFilters.region
+    [...state.filters.regions]
   );
 
 
@@ -695,7 +695,7 @@ function renderGroupsByTopic(rows) {
   const groups = groupByMulti(
     rows,
     r => r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"],
-    activeFilters.topic 
+    [...state.filters.topics] 
   );
 
   const keys = Object.keys(groups).sort((a, b) => {
@@ -751,6 +751,7 @@ function groupByMulti(rows, getKeys, activeFilters = null) {
   });
   return map;
 }
+
 
 
 
