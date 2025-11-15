@@ -994,3 +994,16 @@ details[open] .toggle-icon {
 .subtitle {
   display: block !important;
 }
+
+/* TOP NAV: HOME / STATS */
+.header-inner { ... }
+.site-nav { ... }
+.nav-link { ... }
+.nav-link:hover { ... }
+.nav-link.nav-link-active { ... }
+
+@media (min-width: 700px) {
+  .header-inner { ... }
+}
+
+
