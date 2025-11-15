@@ -146,3 +146,19 @@
 .stats-table tbody tr:nth-child(even) td {
   background: #fafafa;
 }
+
+/* Gör introsektionen vänsterställd lika brett som korten */
+.stats-page-intro {
+  max-width: 1100px; /* samma som layouten */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;  /* ta bort sidopadding */
+  padding-right: 0;
+}
+
+.stats-grid {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
