@@ -1040,5 +1040,9 @@ details[open] .toggle-icon {
   border-radius: 6px;
 }
 
+.site-nav {
+  margin-top: 0.4rem;   /* lite luft mellan loggan och knapparna */
+}
+
 
 
