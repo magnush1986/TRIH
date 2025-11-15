@@ -1006,4 +1006,39 @@ details[open] .toggle-icon {
   .header-inner { ... }
 }
 
+/* ============================
+   NAV AS BUTTON-LIKE TEXT LINKS
+   ============================ */
+
+.site-nav {
+  display: flex;
+  gap: 1.4rem;
+  margin-left: auto;
+  align-items: center;
+}
+
+/* Alla länkar */
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+/* Hover (endast text får lätt bakgrund) */
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 🔥 Aktiv sida — SER UT SOM EN KNAPP */
+.nav-link-active {
+  background: white;
+  color: #7a0f2b;        /* TRIH vinröd text */
+  border-radius: 6px;
+}
+
+
 
