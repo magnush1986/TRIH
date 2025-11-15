@@ -54,6 +54,10 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+
+  /* ⭐ NYTT: gör bordet mer BI-likt */
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .stats-table thead th {
@@ -90,4 +94,44 @@
   .stats-card {
     padding: 14px 14px;
   }
+
+  /* ⭐ NYTT: mer touchvänligt */
+  .stats-table td,
+  .stats-table th {
+    padding: 10px 8px;
+  }
+
+  .stats-heading {
+    font-size: 1.1rem;
+  }
+}
+
+/* =========================================================
+   ⭐ NYA FÖRBÄTTRINGAR (1–6)
+   ========================================================= */
+
+/* ⭐ (1) Hover-effekt på rader */
+.stats-table tbody tr:hover td {
+  background: #fafbff;
+}
+
+/* ⭐ (2) Stabil procentkolumn */
+.stats-table td:nth-child(3),
+.stats-table th:nth-child(3) {
+  width: 90px;
+}
+
+/* ⭐ (3) Tydligare rubriker */
+.stats-heading {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ⭐ (5) Förberedelse för italic “No X assigned”
+   OBS: CSS kan inte matcha text — vi lägger klass i JS
+*/
+.stats-noassign {
+  font-style: italic;
+  color: #666;
 }
