@@ -141,3 +141,8 @@
   font-style: italic;
   color: #666;
 }
+
+/* ⭐ Zebra-striping: varannan rad ljus bakgrund */
+.stats-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
