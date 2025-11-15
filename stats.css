@@ -44,6 +44,12 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
+.stats-table-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
 .stats-heading {
   margin: 0 0 0.6rem 0;
   font-size: 1.05rem;
