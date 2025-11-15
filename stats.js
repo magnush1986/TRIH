@@ -174,6 +174,16 @@ function renderStatsTable(cardId, rows) {
     const tr = document.createElement("tr");
     const pctStr = `${pct.toFixed(1)}%`;
 
+    // --- NEW: markera ENBART "No X assigned" ---
+    const isUnassigned =
+      label === "No period assigned" ||
+      label === "No region assigned" ||
+      label === "No topic assigned";
+
+    if (isUnassigned) {
+      tr.classList.add("stats-noassign");
+    }
+
     tr.innerHTML = `
       <td>${escapeHtml(label)}</td>
       <td class="stats-num">${count}</td>
@@ -182,6 +192,7 @@ function renderStatsTable(cardId, rows) {
     tbody.appendChild(tr);
   });
 }
+
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
