@@ -44,14 +44,10 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       // Sort like on main page
-      const sortedPeriods = sortWithNoneLast(periodStats.map(x => x.label))
-        .map(lbl => periodStats.find(x => x.label === lbl));
+      const sortedPeriods = periodStats.sort((a, b) => b.count - a.count);
+      const sortedRegions = regionStats.sort((a, b) => b.count - a.count);
+      const sortedTopics = topicStats.sort((a, b) => b.count - a.count);
 
-      const sortedRegions = sortAlphaNoneLast(regionStats.map(x => x.label))
-        .map(lbl => regionStats.find(x => x.label === lbl));
-
-      const sortedTopics = sortAlphaNoneLast(topicStats.map(x => x.label))
-        .map(lbl => topicStats.find(x => x.label === lbl));
 
       renderStatsTable("periodCard", sortedPeriods);
       renderStatsTable("regionCard", sortedRegions);
