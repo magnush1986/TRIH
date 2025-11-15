@@ -1,0 +1,93 @@
+/* =========================================================
+   STATS PAGE LAYOUT
+   ========================================================= */
+
+.stats-page-intro {
+  max-width: 800px;
+  margin: 1.5rem auto 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.stats-page-intro h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+}
+
+.stats-page-intro p {
+  margin: 0 0 0.7rem 0;
+  line-height: 1.6;
+}
+
+.stats-page-meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Grid med två kolumner på desktop, en på mobil */
+.stats-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 1rem;
+}
+
+@media (min-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stats-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.stats-heading {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.05rem;
+}
+
+/* Tabellen */
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.stats-table thead th {
+  text-align: left;
+  padding: 6px 8px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.stats-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f1f5;
+}
+
+.stats-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.stats-num {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+
+.stats-placeholder {
+  text-align: left;
+  padding: 8px;
+  color: var(--muted);
+}
+
+/* Lite tightare på små skärmar */
+@media (max-width: 600px) {
+  .stats-card {
+    padding: 14px 14px;
+  }
+}
