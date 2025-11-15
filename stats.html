@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Rest Is History — Tagging Stats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.png">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="cover.PNG" alt="The Rest Is History" class="cover" />
+        <div>
+          <h1 class="title">The Rest Is History — Episode Explorer</h1>
+          <p class="subtitle">Search, filter and explore all free episodes of the podcast.</p>
+        </div>
+      </div>
+
+      <nav class="site-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="stats.html" class="nav-link nav-link-active">Stats</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stats-page-intro">
+      <h2>Tagging statistics</h2>
+      <p>
+        This page shows how often each <strong>Period</strong>, <strong>Region</strong> and <strong>Topic</strong>
+        appears in the community tagging. Percentages are based on the total number of episodes, so they don’t
+        add up to 100% — because each episode can belong to several categories.
+      </p>
+      <p class="stats-page-meta" id="statsTotalInfo">
+        Loading episode counts…
+      </p>
+    </section>
+
+    <section class="stats-grid">
+      <!-- Period -->
+      <article class="stats-card" id="periodCard">
+        <h3 class="stats-heading">By period</h3>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Episodes</th>
+              <th>% of episodes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="3" class="stats-placeholder">Loading…</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <!-- Region -->
+      <article class="stats-card" id="regionCard">
+        <h3 class="stats-heading">By region</h3>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Episodes</th>
+              <th>% of episodes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="3" class="stats-placeholder">Loading…</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <!-- Topic -->
+      <article class="stats-card" id="topicCard">
+        <h3 class="stats-heading">By topic</h3>
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Topic</th>
+              <th>Episodes</th>
+              <th>% of episodes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="3" class="stats-placeholder">Loading…</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-community">
+        Categories and tag data are based on a Google Sheet used by TRIH fans.
+        This Explorer builds on the great work of Dan’s original categorisation (known on X as @Dan_YIMBY),
+        now opening the tagging to the whole TRIH community.
+      </div>
+
+      <div class="footer-official">
+        <a href="https://www.therestishistory.com" target="_blank" rel="noopener">
+          Visit the official The Rest Is History website →
+        </a>
+      </div>
+
+      <div class="footer-disclaimer">
+        <span class="info-icon">ℹ️</span><br>
+        This is an unofficial fan-made tool. Data is sourced from the public RSS feed and community tagging.<br><br>
+        Not affiliated with The Rest Is History.
+      </div>
+
+      <div class="footer-credit">
+        Crafted by Magnus H – TRIH-fan
+      </div>
+    </div>
+  </footer>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>
