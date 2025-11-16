@@ -442,13 +442,16 @@ function stripPrefix(v) {
   return v.replace(/^\d+\.\s*/, "");
 }
 
-function sortWithNoneLast(arr) {
+function sortAlphaNoneLast(arr) {
   return arr.sort((a, b) => {
-    const na = a.startsWith("No ");
-    const nb = b.startsWith("No ");
-    if (na && !nb) return 1;
-    if (!na && nb) return -1;
-    return stripPrefix(a).localeCompare(stripPrefix(b), undefined, { numeric: true });
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+
+    // Normal alfabetisk sortering
+    return a.localeCompare(b);
   });
 }
 
