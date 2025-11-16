@@ -473,7 +473,7 @@ function sortWithNoneLast(arr) {
 
     // Om bara en har nummer → nummer först
     if (!isNaN(aNum) && isNaN(bNum)) return -1;
-    if (isNaN(aNum) && !bIsNone) return 1;
+    if (isNaN(aNum) && !isNaN(bNum)) return 1;
 
     // Fallback → alfabetiskt
     return a.localeCompare(b);
