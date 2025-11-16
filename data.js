@@ -790,24 +790,6 @@ function sortAlphaNoneLast(arr) {
   });
 }
 
-function groupByMulti(rows, getKeys, activeFilters = null) {
-  const map = {};
-  rows.forEach(r => {
-    let keys = getKeys(r);
-
-    // STRICT MODE: Om filter är aktivt → behåll endast matchande keys
-    if (activeFilters && activeFilters.length) {
-      keys = keys.filter(k => activeFilters.includes(k));
-    }
-
-    keys.forEach(k => {
-      const key = String(k);
-      (map[key] ||= []).push(r);
-    });
-  });
-  return map;
-}
-
 function periodSortValue(v) {
   const n = parseInt(v);
   return isNaN(n) ? 9999 : n;   // lägg icke-numrerade sist
@@ -828,13 +810,6 @@ function renderLazyPlaceholder(realGroup) {
   return ph;
 }
 
-// 🆕 Append grupper med lazy loading
-function appendLazyGroups(host, groups) {
-  groups.forEach(groupDom => {
-    const ph = renderLazyPlaceholder(groupDom);
-    host.appendChild(ph);
-  });
-}
 
 function appendLazyGroups(host, sections) {
   sections.forEach(section => {
