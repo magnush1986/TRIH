@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Title: (r["Title"] || "").trim(),
         Region: parseTags(r["Region"]),
         Period: parseTags(r["Period"]),
-        Topic: parseTags(r["Topic"])
+        Topic: parseTags(r["Topic"]),
+        PubDate: r["PubDate"] ? new Date(r["PubDate"]) : null
       }));
 
       const episodes = normalized.filter(r => r.Title);
@@ -48,10 +49,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const sortedRegions = regionStats.sort((a, b) => b.count - a.count);
       const sortedTopics = topicStats.sort((a, b) => b.count - a.count);
 
-
+      // Render tables
       renderStatsTable("periodCard", sortedPeriods);
       renderStatsTable("regionCard", sortedRegions);
       renderStatsTable("topicCard", sortedTopics);
+
+      // --- NEW: Render line charts ---
+      renderLineChart("chart-period", episodes, "Period", generatePalette(20));
+      renderLineChart("chart-region", episodes, "Region", generatePalette(15));
+      renderLineChart("chart-topic", episodes, "Topic", generatePalette(20));
     })
     .catch(err => {
       console.error("Failed to load CSV for stats", err);
@@ -67,6 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// --------------------------------------------------------
+// CSV load
+// --------------------------------------------------------
 function loadCsv(url) {
   return new Promise((resolve, reject) => {
     Papa.parse(url, {
@@ -84,6 +93,9 @@ function setTotalInfo(text) {
   if (el) el.textContent = text;
 }
 
+// --------------------------------------------------------
+// Stats builders
+// --------------------------------------------------------
 function buildTagStats(rows, selectorFn, totalEpisodes) {
   const map = new Map();
 
@@ -120,8 +132,9 @@ function parseEpisode(v) {
   return m ? Number(m[1]) : null;
 }
 
-// --- Tag utilities (same logic as data.js) ---
-
+// --------------------------------------------------------
+// Tag utilities (same logic as data.js)
+// --------------------------------------------------------
 function parseTags(v) {
   if (!v) return [];
   return String(v)
@@ -156,8 +169,9 @@ function sortAlphaNoneLast(arr) {
   });
 }
 
-// --- Render ---
-
+// --------------------------------------------------------
+// Render tables
+// --------------------------------------------------------
 function renderStatsTable(cardId, rows) {
   const card = document.getElementById(cardId);
   if (!card) return;
@@ -174,7 +188,7 @@ function renderStatsTable(cardId, rows) {
     const tr = document.createElement("tr");
     const pctStr = `${pct.toFixed(1)}%`;
 
-    // --- NEW: markera ENBART "No X assigned" ---
+    // highlight unassigned only
     const isUnassigned =
       label === "No period assigned" ||
       label === "No region assigned" ||
@@ -193,7 +207,6 @@ function renderStatsTable(cardId, rows) {
   });
 }
 
-
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     "&": "&amp;",
@@ -202,4 +215,102 @@ function escapeHtml(s) {
     '"': "&quot;",
     "'": "&#39;"
   }[c]));
+}
+
+// --------------------------------------------------------
+// NEW — LINE CHARTS
+// --------------------------------------------------------
+
+function generatePalette(n) {
+  const baseColors = [
+    "#8B1E3F", "#D95F53", "#F2C14E", "#6AA84F", "#3C91E6",
+    "#342EAD", "#6A4C93", "#C44536", "#FF7F11", "#2A9D8F",
+    "#264653", "#E76F51", "#E9C46A", "#8A508F", "#4CC9F0",
+    "#4361EE", "#7209B7", "#F72585", "#5A189A", "#0A9396"
+  ];
+  return baseColors.slice(0, n);
+}
+
+function renderLineChart(canvasId, episodes, tagField, palette) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  // 1. Extract all years
+  const allYears = Array.from(
+    new Set(
+      episodes
+        .map(e => (e.PubDate ? e.PubDate.getFullYear() : null))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a - b);
+
+  // 2. Extract all tags (periods, regions, topics)
+  const allTags = new Set();
+  episodes.forEach(ep => {
+    const tags = ep[tagField] || [];
+    tags.forEach(t => allTags.add(t));
+  });
+
+  const tagList = Array.from(allTags);
+
+  // 3. Build dataset per tag
+  const datasets = tagList.map((tag, i) => {
+    const color = palette[i % palette.length];
+    const data = allYears.map(y => {
+      return episodes.filter(
+        ep =>
+          ep.PubDate &&
+          ep.PubDate.getFullYear() === y &&
+          ep[tagField].includes(tag)
+      ).length;
+    });
+
+    return {
+      label: tag,
+      data,
+      borderColor: color,
+      backgroundColor: color + "33",
+      tension: 0.3,
+      borderWidth: 2,
+      pointRadius: 0
+    };
+  });
+
+  // 4. Create Chart.js line chart
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: allYears,
+      datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "nearest",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom"
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Year"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Episodes"
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
 }
