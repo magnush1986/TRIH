@@ -491,8 +491,8 @@ function parseTags(v) {
   if (!v) return [];
   return String(v)
     .split(",")
-    //.map(x => x.trim())
-    .map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
+    .map(x => x.trim())
+    //.map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
     .filter(Boolean);
 }
 
@@ -769,6 +769,7 @@ function periodSortValue(v) {
   const n = parseInt(v);
   return isNaN(n) ? 9999 : n;   // lägg icke-numrerade sist
 }
+
 
 
 
