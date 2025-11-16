@@ -249,7 +249,7 @@ function applyFiltersAndRender() {
       : `${totalFiltered} episodes in current view — based on ${totalAll} total episodes`
   );
 
-  if (!total) {
+  if (!totalFiltered) {
     renderStatsTable("periodCard", []);
     renderStatsTable("regionCard", []);
     renderStatsTable("topicCard", []);
