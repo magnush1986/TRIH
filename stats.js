@@ -581,7 +581,7 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     );
 
     return {
-      label: tag,
+      label: stripPrefix(tag),
       data,
       borderColor: color,
       backgroundColor: color + "33",
