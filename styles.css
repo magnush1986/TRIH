@@ -1052,4 +1052,22 @@ details[open] .toggle-icon {
   cursor: default;
 }
 
+/* Sökfältets placeholder-storlek */
+#q::placeholder {
+  font-size: 14px;
+}
+
+.filter-dropdown-inner {
+  font-size: 14px;
+}
+
+.filter-dropdown-inner .filter-option {
+  font-size: 14px;
+}
+
+.filter-dropdown-inner input[type="checkbox"] {
+  transform: scale(1.1); /* valfritt – gör boxarna tydligare */
+  margin-right: 6px;
+}
+
 
