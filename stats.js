@@ -506,7 +506,7 @@ function renderStatsTable(cardId, rows) {
     if (isUnassigned) tr.classList.add("stats-noassign");
 
     tr.innerHTML = `
-      <td>${escapeHtml(label)}</td>
+      <td>${escapeHtml(stripPrefix(label))}</td>
       <td class="stats-num">${count}</td>
       <td class="stats-num">${pct.toFixed(1)}%</td>
     `;
