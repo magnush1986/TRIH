@@ -74,7 +74,7 @@ function bootstrap() {
       state.raw = normalized.filter(r => r.Title);
 
       buildFilterOptions(state.raw);
-      applyAndRender();
+      debouncedApply();
     })
     .catch(err => {
       console.error("CSV load failed", err);
@@ -165,7 +165,7 @@ function buildFilterOptions(rows) {
         } else {
           set.delete(v);
         }
-        applyAndRender();
+        debouncedApply();
       });
 
       opt.appendChild(input);
@@ -255,7 +255,7 @@ function setupGroupByPills() {
       // uppdatera state
       state.groupBy = btn.dataset.group; // "date" | "period" | "region" | "topic"
 
-      applyAndRender();
+      debouncedApply();
     });
   });
 
@@ -275,7 +275,7 @@ function resetFilters() {
   const allChecks = document.querySelectorAll(".filter-dropdown input[type='checkbox']");
   allChecks.forEach(c => c.checked = false);
 
-  applyAndRender();
+  debouncedApply();
 }
 
 // ---------- Apply filters + render ----------
@@ -344,17 +344,20 @@ function applyAndRender() {
   }
 }
 
+// 🆕 Global debounced render (för filter + pills)
+const debouncedApply = debounce(() => applyAndRender(), 220);
+
 function renderChips() {
   const chipBox = document.getElementById("activeChips");
   chipBox.innerHTML = "";
   const { years, periods, regions, topics, q } = state.filters;
 
   const parts = [];
-  if (q) parts.push(chip("Search", q, () => { document.getElementById("q").value=""; state.filters.q=""; applyAndRender(); }));
-  years.forEach(v => parts.push(chip("Year", v, () => { years.delete(v); uncheck("year", v); applyAndRender(); })));
-  periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); uncheck("period", v); applyAndRender(); })));
-  regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); uncheck("region", v); applyAndRender(); })));
-  topics.forEach(v => parts.push(chip("Topic", v, () => { topics.delete(v); uncheck("topic", v); applyAndRender(); })));
+  if (q) parts.push(chip("Search", q, () => { document.getElementById("q").value=""; state.filters.q=""; debouncedApply(); }));
+  years.forEach(v => parts.push(chip("Year", v, () => { years.delete(v); uncheck("year", v); debouncedApply(); })));
+  periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); uncheck("period", v); debouncedApply(); })));
+  regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); uncheck("region", v); debouncedApply(); })));
+  topics.forEach(v => parts.push(chip("Topic", v, () => { topics.delete(v); uncheck("topic", v); debouncedApply(); })));
 
   parts.forEach(el => chipBox.appendChild(el));
 }
@@ -639,7 +642,7 @@ function rebuildFilterOptionsCascade() {
         } else {
           owningSet.delete(v);
         }
-        applyAndRender(); // trigga om-rendering + rebuild
+        debouncedApply(); // trigga om-rendering + rebuild
       });
 
       opt.appendChild(input);
