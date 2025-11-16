@@ -569,7 +569,15 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     (e[tagField] || []).forEach(t => tags.add(t))
   );
 
-  const datasets = [...tags].map((tag, i) => {
+  // Sortera taggar efter typ
+  let tagList = [...tags];
+  if (tagField === "Period") {
+    tagList = sortWithNoneLast(tagList);
+  } else {
+    tagList = sortAlphaNoneLast(tagList);
+  }
+  
+  const datasets = tagList.map((tag, i) => {
     const color = palette[i % palette.length];
     const data = years.map(y =>
       episodes.filter(
