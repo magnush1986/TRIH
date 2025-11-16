@@ -1096,3 +1096,18 @@ details[open] .toggle-icon {
   gap: 10px;
   align-items: center;
 }
+
+/* Desktop: filters i rad */
+.filter-fields {
+  display: grid;
+  grid-template-columns: repeat(4, auto) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Mobil: stacked (du har redan detta i pill CSS men lägger en fallback) */
+@media (max-width: 700px) {
+  .filter-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
