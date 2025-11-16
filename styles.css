@@ -1171,3 +1171,17 @@ details[open] .toggle-icon {
   color: #666;
   font-size: 14px;
 }
+
+/* Full stack of filter pills on mobile */
+@media (max-width: 600px) {
+  .filter-fields {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .pill-wrapper,
+  .pill-button {
+    width: 100% !important;
+  }
+}
