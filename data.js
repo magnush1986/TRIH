@@ -491,8 +491,8 @@ function parseTags(v) {
   if (!v) return [];
   return String(v)
     .split(",")
-    .map(x => x.trim())
-    //.map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
+    //.map(x => x.trim())
+    .map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
     .filter(Boolean);
 }
 
@@ -504,13 +504,27 @@ function sortWithNoneLast(arr) {
   return arr.sort((a, b) => {
     const aIsNone = a.startsWith("No ");
     const bIsNone = b.startsWith("No ");
-    if (aIsNone && !bIsNone) return 1;   // "No ..." goes last
+
+    // "No period assigned" sist
+    if (aIsNone && !bIsNone) return 1;
     if (!aIsNone && bIsNone) return -1;
-    const aa = stripPrefix(a);
-    const bb = stripPrefix(b);
-    return bb.localeCompare(aa, undefined, { numeric: true });
+
+    // Hämta prefixnummer
+    const aNum = parseInt(a);
+    const bNum = parseInt(b);
+
+    // Om båda har nummer → sortera numeriskt ASC
+    if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+
+    // Om bara en har nummer → nummer först
+    if (!isNaN(aNum) && isNaN(bNum)) return -1;
+    if (isNaN(aNum) && !isNaN(bNum)) return 1;
+
+    // Fallback → alfabetiskt
+    return a.localeCompare(b);
   });
 }
+
 
 function megaphoneGuidToPodlink(guid) {
   if (!guid) return null;
@@ -752,6 +766,7 @@ function groupByMulti(rows, getKeys, activeFilters = null) {
   });
   return map;
 }
+
 
 
 
