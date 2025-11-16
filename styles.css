@@ -1045,4 +1045,11 @@ details[open] .toggle-icon {
 }
 
 
+/* Förhindra hover på aktiv knapp */
+.nav-link-active:hover {
+  background: white !important;
+  color: #7a0f2b !important;
+  cursor: default;
+}
+
 
