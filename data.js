@@ -24,6 +24,22 @@ const state = {
   }
 };
 
+// 🆕 Lazy loading cache
+const lazyCache = new WeakMap();
+
+// 🆕 IntersectionObserver för lazy loading av grupper
+const lazyObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    const placeholder = entry.target;
+    const realGroup = lazyCache.get(placeholder);
+    if (realGroup) {
+      placeholder.replaceWith(realGroup);
+      lazyObserver.unobserve(placeholder);
+    }
+  });
+}, { rootMargin: "200px" });
 
 document.addEventListener("DOMContentLoaded", () => {
   bootstrap();
@@ -368,6 +384,9 @@ function renderGroups(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
+  // 🆕 Lazy-loading samlar alla grupper innan append
+  const sections = [];
+
   const byYear = groupBy(rows, r => r.PublishDate ? r.PublishDate.getFullYear() : "Unknown");
   const yearKeys = Object.keys(byYear).sort((a,b) => Number(b) - Number(a));
 
@@ -389,8 +408,12 @@ function renderGroups(rows) {
       section.appendChild(month);
     });
 
-    host.appendChild(section);
+    // 🆕 Lägg inte till direkt — samla
+    sections.push(section);
   });
+
+  // 🆕 Lazy-append (placeholder -> riktig grupp visas vid scroll)
+  appendLazyGroups(host, sections);
 }
 
 // ---------- Episode card ----------
@@ -631,13 +654,14 @@ function renderGroupsByPeriod(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
 
+  // 🆕 Samla sektioner innan lazy-append
+  const sections = [];
+
   const groups = groupByMulti(
     rows,
     r => r.Period.length ? r.Period : ["No period assigned"],
     [...state.filters.periods]
   );
-
-
 
   const keys = Object.keys(groups).sort((a, b) => {
     const aIsNone = a.startsWith("No ");
@@ -651,7 +675,6 @@ function renderGroupsByPeriod(rows) {
     return periodSortValue(a) - periodSortValue(b);
   });
 
-
   keys.forEach(key => {
     const section = document.createElement("section");
     section.className = "year-group";
@@ -661,13 +684,20 @@ function renderGroupsByPeriod(rows) {
       .sort((a, b) => b.PublishDate - a.PublishDate)
       .forEach(r => section.appendChild(renderEpisodeCard(r)));
 
-    host.appendChild(section);
+    // 🆕 Samla istället för att append:a direkt
+    sections.push(section);
   });
+
+  // 🆕 Lazy-append med placeholders
+  appendLazyGroups(host, sections);
 }
 
 function renderGroupsByRegion(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
+
+  // 🆕 Samla sektionerna här
+  const sections = [];
 
   const groups = groupByMulti(
     rows,
@@ -675,15 +705,14 @@ function renderGroupsByRegion(rows) {
     [...state.filters.regions]
   );
 
-
   const keys = Object.keys(groups).sort((a, b) => {
     const aIsNone = a.startsWith("No ");
     const bIsNone = b.startsWith("No ");
-  
+
     // Always place "No region assigned" last
     if (aIsNone && !bIsNone) return 1;
     if (!aIsNone && bIsNone) return -1;
-  
+
     // Alphabetical sort for regions
     return a.localeCompare(b);
   });
@@ -697,13 +726,20 @@ function renderGroupsByRegion(rows) {
       .sort((a, b) => b.PublishDate - a.PublishDate)
       .forEach(r => section.appendChild(renderEpisodeCard(r)));
 
-    host.appendChild(section);
+    // 🆕 lägg INTE till i DOM ännu
+    sections.push(section);
   });
+
+  // 🆕 Lazy-append med placeholders
+  appendLazyGroups(host, sections);
 }
 
 function renderGroupsByTopic(rows) {
   const host = document.getElementById("list");
   host.innerHTML = "";
+
+  // 🆕 Samla sektioner här
+  const sections = [];
 
   const groups = groupByMulti(
     rows,
@@ -714,11 +750,11 @@ function renderGroupsByTopic(rows) {
   const keys = Object.keys(groups).sort((a, b) => {
     const aIsNone = a.startsWith("No ");
     const bIsNone = b.startsWith("No ");
-  
+
     // Always place "No topic assigned" last
     if (aIsNone && !bIsNone) return 1;
     if (!aIsNone && bIsNone) return -1;
-  
+
     // Alphabetical sort for topics
     return a.localeCompare(b);
   });
@@ -732,8 +768,12 @@ function renderGroupsByTopic(rows) {
       .sort((a, b) => b.PublishDate - a.PublishDate)
       .forEach(r => section.appendChild(renderEpisodeCard(r)));
 
-    host.appendChild(section);
+    // 🆕 lägg inte i DOM direkt
+    sections.push(section);
   });
+
+  // 🆕 Lazy-append
+  appendLazyGroups(host, sections);
 }
 
 function sortAlphaNoneLast(arr) {
@@ -768,6 +808,29 @@ function groupByMulti(rows, getKeys, activeFilters = null) {
 function periodSortValue(v) {
   const n = parseInt(v);
   return isNaN(n) ? 9999 : n;   // lägg icke-numrerade sist
+}
+
+// 🆕 Skapa en placeholder som byts ut när gruppen syns
+function renderLazyPlaceholder(realGroup) {
+  const ph = document.createElement("div");
+  ph.className = "lazy-placeholder";
+  ph.textContent = "Loading…";
+
+  // koppla riktiga gruppen till placeholdern
+  lazyCache.set(ph, realGroup);
+
+  // lägg till i observer
+  lazyObserver.observe(ph);
+
+  return ph;
+}
+
+// 🆕 Append grupper med lazy loading
+function appendLazyGroups(host, groups) {
+  groups.forEach(groupDom => {
+    const ph = renderLazyPlaceholder(groupDom);
+    host.appendChild(ph);
+  });
 }
 
 
