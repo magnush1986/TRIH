@@ -1111,3 +1111,10 @@ details[open] .toggle-icon {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Fix: pills-row ska ha 4 kolumner på desktop även på stats.html */
+@media (min-width: 700px) {
+  .filters-row.pills-row {
+    grid-template-columns: repeat(4, auto) auto;
+  }
+}
