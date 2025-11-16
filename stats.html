@@ -39,7 +39,7 @@
       <p>
         This page shows how often each <strong>Period</strong>, <strong>Region</strong> and
         <strong>Topic</strong> appears in the community tagging.
-        Percentages are based on the total number of episodes, so they don’t add up to 100% —
+        Percentages are based on the total number of episodes in the current view, and they don’t add up to 100% —
         because each episode can belong to several categories.
       </p>
       <p class="stats-page-meta" id="statsTotalInfo">
@@ -47,7 +47,45 @@
       </p>
     </section>
 
-    <!-- ⭐ NEW SECTION: THREE LINE CHARTS -->
+    <!-- ⭐ FILTERS (utan search) -->
+    <section class="filters stats-filters">
+
+      <div class="filters-row pills-row">
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="year">
+            <span>Year</span>
+            <span class="pill-arrow">▾</span>
+          </button>
+        </div>
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="period">
+            <span>Period</span>
+            <span class="pill-arrow">▾</span>
+          </button>
+        </div>
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="region">
+            <span>Region</span>
+            <span class="pill-arrow">▾</span>
+          </button>
+        </div>
+        <div class="pill-wrapper">
+          <button type="button" class="pill-button" data-filter="topic">
+            <span>Topic</span>
+            <span class="pill-arrow">▾</span>
+          </button>
+        </div>
+        <div class="filter actions">
+          <button id="clearBtn" type="button" class="button secondary">Clear</button>
+        </div>
+      </div>
+
+      <div id="filterDropdownHost"></div>
+
+      <div class="filters-row chips" id="activeChips"></div>
+    </section>
+
+    <!-- ⭐ LINE CHARTS -->
     <section class="charts-section">
 
       <article class="chart-card">
@@ -73,7 +111,7 @@
 
     </section>
 
-    <!-- Existing tables -->
+    <!-- TABELLER -->
     <section class="stats-grid">
 
       <!-- Period -->
