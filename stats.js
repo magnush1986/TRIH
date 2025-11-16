@@ -1,9 +1,31 @@
 // stats.js
-// Simple stats overview by Period, Region and Topic
+// Stats overview by Period, Region and Topic + filters + line charts
 
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZC7Oawx266328_YGXnVt5d970Jbca-XIsYkbQQfp78LKLOsuLqZjPyoAmeto9rrhojtEBi0zMLkOd/pub?output=csv";
+const SHEET_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZC7Oawx266328_YGXnVt5d970Jbca-XIsYkbQQfp78LKLOsuLqZjPyoAmeto9rrhojtEBi0zMLkOd/pub?output=csv";
 
+const statsState = {
+  raw: [],
+  filtered: [],
+  filters: {
+    years: new Set(),
+    periods: new Set(),
+    regions: new Set(),
+    topics: new Set()
+  }
+};
+
+let chartPeriod = null;
+let chartRegion = null;
+let chartTopic = null;
+
+// ---------------------------------------------------------------------------
+// INITIALISERING
+// ---------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
+  const clearBtn = document.getElementById("clearBtn");
+  if (clearBtn) clearBtn.addEventListener("click", resetFilters);
+
   loadCsv(SHEET_CSV_URL)
     .then(rows => {
       const normalized = rows.map(r => ({
@@ -16,66 +38,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }));
 
       const episodes = normalized.filter(r => r.Title);
-      const totalEpisodes = episodes.length;
+      statsState.raw = episodes;
+      statsState.filtered = episodes.slice();
 
-      if (!totalEpisodes) {
-        setTotalInfo("No episodes found in data.");
-        return;
-      }
-
-      setTotalInfo(`${totalEpisodes} episodes in total (100%)`);
-
-      // Build counts
-      const periodStats = buildTagStats(
-        episodes,
-        r => (r.Period.length ? r.Period : ["No period assigned"]),
-        totalEpisodes
-      );
-
-      const regionStats = buildTagStats(
-        episodes,
-        r => (r.Region.length ? r.Region : ["No region assigned"]),
-        totalEpisodes
-      );
-
-      const topicStats = buildTagStats(
-        episodes,
-        r => (r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"]),
-        totalEpisodes
-      );
-
-      // Sort like on main page
-      const sortedPeriods = periodStats.sort((a, b) => b.count - a.count);
-      const sortedRegions = regionStats.sort((a, b) => b.count - a.count);
-      const sortedTopics = topicStats.sort((a, b) => b.count - a.count);
-
-      // Render tables
-      renderStatsTable("periodCard", sortedPeriods);
-      renderStatsTable("regionCard", sortedRegions);
-      renderStatsTable("topicCard", sortedTopics);
-
-      // --- NEW: Render line charts ---
-      renderLineChart("chart-period", episodes, "Period", generatePalette(20));
-      renderLineChart("chart-region", episodes, "Region", generatePalette(15));
-      renderLineChart("chart-topic", episodes, "Topic", generatePalette(20));
+      buildFilterOptions(episodes);
+      applyFiltersAndRender();
     })
     .catch(err => {
       console.error("Failed to load CSV for stats", err);
       setTotalInfo("Failed to load data.");
-      ["periodCard", "regionCard", "topicCard"].forEach(id => {
-        const card = document.getElementById(id);
-        if (!card) return;
-        const tbody = card.querySelector("tbody");
-        if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="3" class="stats-placeholder">Failed to load data.</td></tr>`;
-        }
-      });
     });
 });
 
-// --------------------------------------------------------
-// CSV load
-// --------------------------------------------------------
+// ---------------------------------------------------------------------------
+// CSV loader
+// ---------------------------------------------------------------------------
 function loadCsv(url) {
   return new Promise((resolve, reject) => {
     Papa.parse(url, {
@@ -93,51 +70,363 @@ function setTotalInfo(text) {
   if (el) el.textContent = text;
 }
 
-// --------------------------------------------------------
-// Stats builders
-// --------------------------------------------------------
-function buildTagStats(rows, selectorFn, totalEpisodes) {
-  const map = new Map();
+// ---------------------------------------------------------------------------
+// FILTER SETUP
+// ---------------------------------------------------------------------------
+function buildFilterOptions(rows) {
+  const years = new Set();
+  const periods = new Set();
+  const regions = new Set();
+  const topics = new Set();
 
   rows.forEach(r => {
-    let tags = selectorFn(r) || [];
-    if (!tags.length) return;
+    const y = r.PubDate ? r.PubDate.getFullYear() : null;
+    if (y) years.add(String(y));
 
-    // Ensure no duplicates per episode for same tag
-    tags = Array.from(new Set(tags));
+    (r.Period.length ? r.Period : ["No period assigned"]).forEach(p => periods.add(p));
+    (r.Region.length ? r.Region : ["No region assigned"]).forEach(g => regions.add(g));
+    (r.Topic.length ? r.Topic : ["No topic assigned"]).forEach(t => topics.add(t));
+  });
 
-    tags.forEach(tag => {
-      const current = map.get(tag) || 0;
-      map.set(tag, current + 1);
+  const host = document.getElementById("filterDropdownHost");
+  host.innerHTML = "";
+
+  const dataMap = {
+    year: [...years].sort((a, b) => Number(b) - Number(a)),
+    period: sortWithNoneLast([...periods]),
+    region: sortAlphaNoneLast([...regions]),
+    topic: sortAlphaNoneLast([...topics])
+  };
+
+  ["year", "period", "region", "topic"].forEach(key => {
+    const panel = document.createElement("div");
+    panel.className = "filter-dropdown";
+    panel.dataset.filter = key;
+
+    const inner = document.createElement("div");
+    inner.className = "filter-dropdown-inner";
+    inner.id = key + "Options";
+
+    dataMap[key].forEach(v => {
+      const label = document.createElement("label");
+      label.className = "filter-option";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = v;
+
+      input.addEventListener("change", () => {
+        const set =
+          key === "year"
+            ? statsState.filters.years
+            : key === "period"
+            ? statsState.filters.periods
+            : key === "region"
+            ? statsState.filters.regions
+            : statsState.filters.topics;
+
+        input.checked ? set.add(v) : set.delete(v);
+        applyFiltersAndRender();
+      });
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(stripPrefix(v)));
+      inner.appendChild(label);
+    });
+
+    panel.appendChild(inner);
+    host.appendChild(panel);
+  });
+
+  wirePillButtons();
+}
+
+function wirePillButtons() {
+  const pills = [...document.querySelectorAll(".pill-button")];
+  const panels = [...document.querySelectorAll(".filter-dropdown")];
+  const host = document.getElementById("filterDropdownHost");
+
+  function closeAll() {
+    pills.forEach(p => p.classList.remove("active"));
+    panels.forEach(p => {
+      p.classList.remove("open");
+      host.appendChild(p);
+      p.style.position = "";
+      p.style.left = "";
+      p.style.top = "";
+      p.style.width = "";
+    });
+  }
+
+  pills.forEach(pill => {
+    pill.addEventListener("click", e => {
+      e.stopPropagation();
+      const key = pill.dataset.filter;
+      const panel = panels.find(p => p.dataset.filter === key);
+
+      const isActive = pill.classList.contains("active");
+      if (isActive) {
+        closeAll();
+        return;
+      }
+
+      closeAll();
+      pill.classList.add("active");
+      panel.classList.add("open");
+
+      const wrapper = pill.closest(".pill-wrapper") || pill.parentElement;
+      wrapper.appendChild(panel);
+
+      panel.style.position = "absolute";
+      panel.style.left = "0px";
+      panel.style.top = "100%";
+      panel.style.width = "max-content";
     });
   });
 
-  const result = [];
-  map.forEach((count, label) => {
-    const pct = (count / totalEpisodes) * 100;
-    result.push({
-      label,
-      count,
-      pct
-    });
+  panels.forEach(panel =>
+    panel.addEventListener("click", e => e.stopPropagation())
+  );
+
+  document.addEventListener("click", closeAll);
+}
+
+function resetFilters() {
+  const f = statsState.filters;
+  f.years.clear();
+  f.periods.clear();
+  f.regions.clear();
+  f.topics.clear();
+
+  document
+    .querySelectorAll(".filter-dropdown input[type='checkbox']")
+    .forEach(c => (c.checked = false));
+
+  applyFiltersAndRender();
+}
+
+// ---------------------------------------------------------------------------
+// APPLY FILTERS AND RENDER ALL OUTPUT
+// ---------------------------------------------------------------------------
+function applyFiltersAndRender() {
+  const { years, periods, regions, topics } = statsState.filters;
+
+  let rows = statsState.raw.filter(r => {
+    if (years.size) {
+      const y = r.PubDate ? String(r.PubDate.getFullYear()) : "";
+      if (!years.has(y)) return false;
+    }
+
+    if (periods.size) {
+      const tags = r.Period.length ? r.Period : ["No period assigned"];
+      if (!tags.some(t => periods.has(t))) return false;
+    }
+
+    if (regions.size) {
+      const tags = r.Region.length ? r.Region : ["No region assigned"];
+      if (!tags.some(t => regions.has(t))) return false;
+    }
+
+    if (topics.size) {
+      const tags = r.Topic.length ? r.Topic : ["No topic assigned"];
+      if (!tags.some(t => topics.has(t))) return false;
+    }
+
+    return true;
   });
 
-  return result;
+  statsState.filtered = rows;
+
+  rebuildFilterOptionsCascade();
+  renderChips();
+
+  const total = rows.length;
+  setTotalInfo(
+    total ? `${total} episode${total === 1 ? "" : "s"} in current view` : "No episodes match current filters."
+  );
+
+  if (!total) {
+    renderStatsTable("periodCard", []);
+    renderStatsTable("regionCard", []);
+    renderStatsTable("topicCard", []);
+
+    renderLineChart("chart-period", [], "Period", generatePalette(20));
+    renderLineChart("chart-region", [], "Region", generatePalette(15));
+    renderLineChart("chart-topic", [], "Topic", generatePalette(20));
+    return;
+  }
+
+  const periodStats = buildTagStats(
+    rows,
+    r => (r.Period.length ? r.Period : ["No period assigned"]),
+    total
+  );
+  const regionStats = buildTagStats(
+    rows,
+    r => (r.Region.length ? r.Region : ["No region assigned"]),
+    total
+  );
+  const topicStats = buildTagStats(
+    rows,
+    r => (r.Topic.length ? r.Topic : ["No topic assigned"]),
+    total
+  );
+
+  renderStatsTable("periodCard", periodStats.sort((a, b) => b.count - a.count));
+  renderStatsTable("regionCard", regionStats.sort((a, b) => b.count - a.count));
+  renderStatsTable("topicCard", topicStats.sort((a, b) => b.count - a.count));
+
+  renderLineChart("chart-period", rows, "Period", generatePalette(20));
+  renderLineChart("chart-region", rows, "Region", generatePalette(15));
+  renderLineChart("chart-topic", rows, "Topic", generatePalette(20));
 }
 
-function parseEpisode(v) {
-  if (v == null) return null;
-  const s = String(v).trim();
-  const m = /^(\d+)/.exec(s);
-  return m ? Number(m[1]) : null;
+// ---------------------------------------------------------------------------
+// CHIPS
+// ---------------------------------------------------------------------------
+function renderChips() {
+  const { years, periods, regions, topics } = statsState.filters;
+  const box = document.getElementById("activeChips");
+  box.innerHTML = "";
+
+  years.forEach(v => box.appendChild(makeChip("Year", v, () => removeFilter("year", v))));
+  periods.forEach(v => box.appendChild(makeChip("Period", v, () => removeFilter("period", v))));
+  regions.forEach(v => box.appendChild(makeChip("Region", v, () => removeFilter("region", v))));
+  topics.forEach(v => box.appendChild(makeChip("Topic", v, () => removeFilter("topic", v))));
 }
 
-// --------------------------------------------------------
-// Tag utilities (same logic as data.js)
-// --------------------------------------------------------
+function makeChip(label, value, removeFn) {
+  const el = document.createElement("div");
+  el.className = "chip";
+  el.innerHTML = `
+    <span class="chip-label">${label}:</span>
+    ${escapeHtml(value)}
+    <button class="chip-x">×</button>
+  `;
+  el.querySelector(".chip-x").addEventListener("click", removeFn);
+  return el;
+}
+
+function removeFilter(key, value) {
+  const set =
+    key === "year"
+      ? statsState.filters.years
+      : key === "period"
+      ? statsState.filters.periods
+      : key === "region"
+      ? statsState.filters.regions
+      : statsState.filters.topics;
+
+  set.delete(value);
+  uncheck(key, value);
+  applyFiltersAndRender();
+}
+
+function uncheck(key, value) {
+  const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+  if (!panel) return;
+  panel.querySelectorAll("input").forEach(i => {
+    if (i.value === value) i.checked = false;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// CASCADE: rebuild available filter options based on filtered dataset
+// ---------------------------------------------------------------------------
+function rebuildFilterOptionsCascade() {
+  const { years, periods, regions, topics } = statsState.filters;
+  const rows = statsState.filtered;
+
+  const yearSet = new Set();
+  const periodSet = new Set();
+  const regionSet = new Set();
+  const topicSet = new Set();
+
+  rows.forEach(r => {
+    const y = r.PubDate ? String(r.PubDate.getFullYear()) : null;
+    if (y) yearSet.add(y);
+
+    (r.Period.length ? r.Period : ["No period assigned"]).forEach(v => periodSet.add(v));
+    (r.Region.length ? r.Region : ["No region assigned"]).forEach(v => regionSet.add(v));
+    (r.Topic.length ? r.Topic : ["No topic assigned"]).forEach(v => topicSet.add(v));
+  });
+
+  const dropdowns = [
+    { key: "year", set: yearSet, active: years.size > 0 },
+    { key: "period", set: periodSet, active: periods.size > 0 },
+    { key: "region", set: regionSet, active: regions.size > 0 },
+    { key: "topic", set: topicSet, active: topics.size > 0 }
+  ];
+
+  dropdowns.forEach(({ key, set, active }) => {
+    if (active) return;
+
+    const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+    const inner = panel.querySelector(".filter-dropdown-inner");
+    inner.innerHTML = "";
+
+    const sorted =
+      key === "year"
+        ? [...set].sort((a, b) => Number(b) - Number(a))
+        : key === "period"
+        ? sortWithNoneLast([...set])
+        : sortAlphaNoneLast([...set]);
+
+    sorted.forEach(v => {
+      const label = document.createElement("label");
+      label.className = "filter-option";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = v;
+
+      const owningSet =
+        key === "year"
+          ? years
+          : key === "period"
+          ? periods
+          : key === "region"
+          ? regions
+          : topics;
+
+      input.checked = owningSet.has(v);
+      input.addEventListener("change", () => {
+        input.checked ? owningSet.add(v) : owningSet.delete(v);
+        applyFiltersAndRender();
+      });
+
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(stripPrefix(v)));
+      inner.appendChild(label);
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// STATS BUILD
+// ---------------------------------------------------------------------------
+function buildTagStats(rows, selectorFn, totalEpisodes) {
+  const map = new Map();
+  rows.forEach(r => {
+    const tags = selectorFn(r) || [];
+    tags.forEach(tag =>
+      map.set(tag, (map.get(tag) || 0) + 1)
+    );
+  });
+
+  return [...map.entries()].map(([label, count]) => ({
+    label,
+    count,
+    pct: totalEpisodes ? (count / totalEpisodes) * 100 : 0
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// TAG HELPERS
+// ---------------------------------------------------------------------------
 function parseTags(v) {
   if (!v) return [];
-  return String(v)
+  return v
     .split(",")
     .map(x => stripPrefix(x.trim()))
     .filter(Boolean);
@@ -149,78 +438,70 @@ function stripPrefix(v) {
 
 function sortWithNoneLast(arr) {
   return arr.sort((a, b) => {
-    const aIsNone = a.startsWith("No ");
-    const bIsNone = b.startsWith("No ");
-    if (aIsNone && !bIsNone) return 1;
-    if (!aIsNone && bIsNone) return -1;
-    const aa = stripPrefix(a);
-    const bb = stripPrefix(b);
-    return bb.localeCompare(aa, undefined, { numeric: true });
+    const na = a.startsWith("No ");
+    const nb = b.startsWith("No ");
+    if (na && !nb) return 1;
+    if (!na && nb) return -1;
+    return stripPrefix(a).localeCompare(stripPrefix(b), undefined, { numeric: true });
   });
 }
 
 function sortAlphaNoneLast(arr) {
   return arr.sort((a, b) => {
-    const aIsNone = a.startsWith("No ");
-    const bIsNone = b.startsWith("No ");
-    if (aIsNone && !bIsNone) return 1;
-    if (!aIsNone && bIsNone) return -1;
+    const na = a.startsWith("No ");
+    const nb = b.startsWith("No ");
+    if (na && !nb) return 1;
+    if (!na && nb) return -1;
     return a.localeCompare(b);
   });
 }
 
-// --------------------------------------------------------
-// Render tables
-// --------------------------------------------------------
+// ---------------------------------------------------------------------------
+// RENDER TABLES
+// ---------------------------------------------------------------------------
 function renderStatsTable(cardId, rows) {
   const card = document.getElementById(cardId);
-  if (!card) return;
   const tbody = card.querySelector("tbody");
-  if (!tbody) return;
 
-  if (!rows || !rows.length) {
+  if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="3" class="stats-placeholder">No data</td></tr>`;
     return;
   }
 
   tbody.innerHTML = "";
+
   rows.forEach(({ label, count, pct }) => {
     const tr = document.createElement("tr");
-    const pctStr = `${pct.toFixed(1)}%`;
 
-    // highlight unassigned only
     const isUnassigned =
       label === "No period assigned" ||
       label === "No region assigned" ||
       label === "No topic assigned";
 
-    if (isUnassigned) {
-      tr.classList.add("stats-noassign");
-    }
+    if (isUnassigned) tr.classList.add("stats-noassign");
 
     tr.innerHTML = `
       <td>${escapeHtml(label)}</td>
       <td class="stats-num">${count}</td>
-      <td class="stats-num">${pctStr}</td>
+      <td class="stats-num">${pct.toFixed(1)}%</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
+  return s.replace(/[&<>"']/g, c => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
-  }[c]));
+  })[c]);
 }
 
-// --------------------------------------------------------
-// NEW — LINE CHARTS
-// --------------------------------------------------------
-
+// ---------------------------------------------------------------------------
+// LINE CHARTS
+// ---------------------------------------------------------------------------
 function generatePalette(n) {
   const baseColors = [
     "#8B1E3F", "#D95F53", "#F2C14E", "#6AA84F", "#3C91E6",
@@ -235,35 +516,44 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
-  // 1. Extract all years
-  const allYears = Array.from(
-    new Set(
-      episodes
-        .map(e => (e.PubDate ? e.PubDate.getFullYear() : null))
-        .filter(Boolean)
-    )
-  ).sort((a, b) => a - b);
+  if (canvasId === "chart-period" && chartPeriod) chartPeriod.destroy();
+  if (canvasId === "chart-region" && chartRegion) chartRegion.destroy();
+  if (canvasId === "chart-topic" && chartTopic) chartTopic.destroy();
 
-  // 2. Extract all tags (periods, regions, topics)
-  const allTags = new Set();
-  episodes.forEach(ep => {
-    const tags = ep[tagField] || [];
-    tags.forEach(t => allTags.add(t));
-  });
-
-  const tagList = Array.from(allTags);
-
-  // 3. Build dataset per tag
-  const datasets = tagList.map((tag, i) => {
-    const color = palette[i % palette.length];
-    const data = allYears.map(y => {
-      return episodes.filter(
-        ep =>
-          ep.PubDate &&
-          ep.PubDate.getFullYear() === y &&
-          ep[tagField].includes(tag)
-      ).length;
+  if (!episodes.length) {
+    const empty = new Chart(ctx, {
+      type: "line",
+      data: { labels: [], datasets: [] },
+      options: { responsive: true, maintainAspectRatio: false }
     });
+
+    if (canvasId === "chart-period") chartPeriod = empty;
+    if (canvasId === "chart-region") chartRegion = empty;
+    if (canvasId === "chart-topic") chartTopic = empty;
+    return;
+  }
+
+  const years = [...new Set(
+    episodes
+      .map(e => e.PubDate?.getFullYear())
+      .filter(Boolean)
+  )].sort((a, b) => a - b);
+
+  const tags = new Set();
+  episodes.forEach(e =>
+    (e[tagField] || []).forEach(t => tags.add(t))
+  );
+
+  const datasets = [...tags].map((tag, i) => {
+    const color = palette[i % palette.length];
+    const data = years.map(y =>
+      episodes.filter(
+        e =>
+          e.PubDate &&
+          e.PubDate.getFullYear() === y &&
+          e[tagField]?.includes(tag)
+      ).length
+    );
 
     return {
       label: tag,
@@ -276,43 +566,33 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     };
   });
 
-  // 4. Create Chart.js line chart
-  new Chart(ctx, {
+  const chart = new Chart(ctx, {
     type: "line",
-    data: {
-      labels: allYears,
-      datasets
-    },
+    data: { labels: years, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: "nearest",
-        intersect: false
-      },
-      plugins: {
-        legend: {
-          display: true,
-          position: "bottom"
-        }
-      },
+      interaction: { mode: "nearest", intersect: false },
+      plugins: { legend: { position: "bottom" } },
       scales: {
-        x: {
-          title: {
-            display: true,
-            text: "Year"
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: "Episodes"
-          },
-          beginAtZero: true
-        }
+        x: { title: { display: true, text: "Year" } },
+        y: { beginAtZero: true, title: { display: true, text: "Episodes" } }
       }
     }
   });
+
+  if (canvasId === "chart-period") chartPeriod = chart;
+  if (canvasId === "chart-region") chartRegion = chart;
+  if (canvasId === "chart-topic") chartTopic = chart;
+}
+
+// ---------------------------------------------------------------------------
+// DATE PARSER
+// ---------------------------------------------------------------------------
+function parseEpisode(v) {
+  const s = ("" + v).trim();
+  const m = /^(\d+)/.exec(s);
+  return m ? Number(m[1]) : null;
 }
 
 function parseDate(v) {
