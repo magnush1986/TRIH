@@ -491,8 +491,8 @@ function parseTags(v) {
   if (!v) return [];
   return String(v)
     .split(",")
-    .map(x => x.trim())
-    //.map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
+    //.map(x => x.trim())
+    .map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
     .filter(Boolean);
 }
 
@@ -648,9 +648,7 @@ function renderGroupsByPeriod(rows) {
     if (!aIsNone && bIsNone) return -1;
   
     // I övrigt: samma logik som sortWithNoneLast (omvänd ordning, stripPrefix)
-    const aa = stripPrefix(a);
-    const bb = stripPrefix(b);
-    return bb.localeCompare(aa, undefined, { numeric: true });
+    return periodSortValue(a) - periodSortValue(b);
   });
 
 
@@ -765,6 +763,11 @@ function groupByMulti(rows, getKeys, activeFilters = null) {
     });
   });
   return map;
+}
+
+function periodSortValue(v) {
+  const n = parseInt(v);
+  return isNaN(n) ? 9999 : n;   // lägg icke-numrerade sist
 }
 
 
