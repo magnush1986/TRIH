@@ -1071,3 +1071,20 @@ details[open] .toggle-icon {
 }
 
 
+/* Filterpanelen: text och input */
+.filter-container label,
+.filter-container input,
+.filter-container select {
+    font-size: 16px;
+}
+
+/* Search bar placeholder */
+.filter-container input::placeholder {
+    font-size: 16px;
+}
+
+/* Group-by knapparna */
+.group-buttons button {
+    font-size: 16px;
+}
+
