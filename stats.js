@@ -240,9 +240,13 @@ function applyFiltersAndRender() {
   rebuildFilterOptionsCascade();
   renderChips();
 
-  const total = rows.length;
+  const totalFiltered = rows.length;
+  const totalAll = statsState.raw.length;
+  
   setTotalInfo(
-    total ? `${total} episode${total === 1 ? "" : "s"} in current view` : "No episodes match current filters."
+    totalFiltered === totalAll
+      ? `${totalAll} episodes in total`
+      : `${totalFiltered} episodes in current view — based on ${totalAll} total episodes`
   );
 
   if (!total) {
@@ -259,17 +263,19 @@ function applyFiltersAndRender() {
   const periodStats = buildTagStats(
     rows,
     r => (r.Period.length ? r.Period : ["No period assigned"]),
-    total
+    totalAll
   );
+  
   const regionStats = buildTagStats(
     rows,
     r => (r.Region.length ? r.Region : ["No region assigned"]),
-    total
+    totalAll
   );
+  
   const topicStats = buildTagStats(
     rows,
     r => (r.Topic.length ? r.Topic : ["No topic assigned"]),
-    total
+    totalAll
   );
 
   renderStatsTable("periodCard", periodStats.sort((a, b) => b.count - a.count));
