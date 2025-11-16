@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Region: parseTags(r["Region"]),
         Period: parseTags(r["Period"]),
         Topic: parseTags(r["Topic"]),
-        PubDate: r["PubDate"] ? new Date(r["PubDate"]) : null
+        PubDate: parseDate(r["Publish Date"])
       }));
 
       const episodes = normalized.filter(r => r.Title);
@@ -313,4 +313,10 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
       }
     }
   });
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
 }
