@@ -1118,3 +1118,44 @@ details[open] .toggle-icon {
     grid-template-columns: repeat(4, auto) auto;
   }
 }
+
+/* ------------------------------ */
+/* Lazy-loading placeholders */
+/* ------------------------------ */
+
+.lazy-placeholder {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: #fafafa;
+  color: #999;
+  text-align: center;
+  font-size: 0.9rem;
+  font-style: italic;
+  animation: placeholderPulse 1.2s ease-in-out infinite alternate;
+}
+
+/* Mild pulsering för placeholder */
+@keyframes placeholderPulse {
+  from { opacity: 0.55; }
+  to { opacity: 0.95; }
+}
+
+
+/* ------------------------------ */
+/* Fade-in när den riktiga gruppen laddas */
+/* ------------------------------ */
+
+.year-group {
+  opacity: 0;
+  transform: translateY(6px);
+  animation: fadeInGroup 0.25s ease-out forwards;
+}
+
+@keyframes fadeInGroup {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
