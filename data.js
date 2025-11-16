@@ -491,7 +491,8 @@ function parseTags(v) {
   if (!v) return [];
   return String(v)
     .split(",")
-    .map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
+    .map(x => x.trim())
+    //.map(x => stripPrefix(x.trim()))   // ⭐ ta bort "1. ", "2. ", osv
     .filter(Boolean);
 }
 
@@ -751,6 +752,7 @@ function groupByMulti(rows, getKeys, activeFilters = null) {
   });
   return map;
 }
+
 
 
 
