@@ -473,7 +473,7 @@ function sortWithNoneLast(arr) {
 
     // Om bara en har nummer → nummer först
     if (!isNaN(aNum) && isNaN(bNum)) return -1;
-    if (isNaN(aNum) && !isNaN(bNum)) return 1;
+    if (isNaN(aNum) && !bIsNone) return 1;
 
     // Fallback → alfabetiskt
     return a.localeCompare(b);
@@ -623,4 +623,9 @@ function parseDate(v) {
   if (!v) return null;
   const d = new Date(v);
   return isNaN(d.getTime()) ? null : d;
+}
+
+function periodSortValue(v) {
+  const n = parseInt(v);
+  return isNaN(n) ? 9999 : n;   // icke-numrerade sist
 }
