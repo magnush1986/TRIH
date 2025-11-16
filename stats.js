@@ -452,12 +452,27 @@ function sortWithNoneLast(arr) {
   });
 }
 
-function sortAlphaNoneLast(arr) {
+function sortWithNoneLast(arr) {
   return arr.sort((a, b) => {
-    const na = a.startsWith("No ");
-    const nb = b.startsWith("No ");
-    if (na && !nb) return 1;
-    if (!na && nb) return -1;
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+
+    // "No … assigned" sist
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+
+    // Hämta prefixnummer
+    const aNum = parseInt(a);
+    const bNum = parseInt(b);
+
+    // Om båda har nummer → sortera numeriskt ASC
+    if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+
+    // Om bara en har nummer → nummer först
+    if (!isNaN(aNum) && isNaN(bNum)) return -1;
+    if (isNaN(aNum) && !isNaN(bNum)) return 1;
+
+    // Fallback → alfabetiskt
     return a.localeCompare(b);
   });
 }
