@@ -1185,3 +1185,18 @@ details[open] .toggle-icon {
     width: 100% !important;
   }
 }
+
+/* Override pill-row for mobile — final effective rule */
+@media (max-width: 700px) {
+  .filters-row.pills-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .pill-wrapper,
+  .pill-button,
+  .filter.actions {
+    width: 100% !important;
+  }
+}
