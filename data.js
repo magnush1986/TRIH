@@ -836,7 +836,39 @@ function appendLazyGroups(host, groups) {
   });
 }
 
+function appendLazyGroups(host, sections) {
+  sections.forEach(section => {
+    const placeholder = document.createElement("div");
+    placeholder.className = "lazy-placeholder";
+    placeholder.textContent = "Loading…";
 
+    // koppla placeholder → riktig sektion
+    lazyCache.set(placeholder, section);
+
+    host.appendChild(placeholder);
+    lazyObserver.observe(placeholder);
+  });
+}
+
+function groupByMulti(rows, getTagsFn, activeFilterArray) {
+  const out = {};
+
+  rows.forEach(r => {
+    const tags = getTagsFn(r);
+
+    // om det finns filtrerade taggar → använd bara de matchande
+    const relevant = activeFilterArray.length
+      ? tags.filter(t => activeFilterArray.includes(t))
+      : tags;
+
+    relevant.forEach(tag => {
+      if (!out[tag]) out[tag] = [];
+      out[tag].push(r);
+    });
+  });
+
+  return out;
+}
 
 
 
