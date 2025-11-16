@@ -153,7 +153,7 @@ function buildFilterOptions(rows) {
       });
 
       opt.appendChild(input);
-      opt.appendChild(document.createTextNode(v));
+      opt.appendChild(document.createTextNode(stripPrefix(v)));
       inner.appendChild(opt);
     });
 
@@ -620,7 +620,7 @@ function rebuildFilterOptionsCascade() {
       });
 
       opt.appendChild(input);
-      opt.appendChild(document.createTextNode(v));
+      opt.appendChild(document.createTextNode(stripPrefix(v)));
       inner.appendChild(opt);
     });
   });
@@ -769,6 +769,7 @@ function periodSortValue(v) {
   const n = parseInt(v);
   return isNaN(n) ? 9999 : n;   // lägg icke-numrerade sist
 }
+
 
 
 
