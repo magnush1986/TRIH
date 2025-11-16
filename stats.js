@@ -434,7 +434,8 @@ function parseTags(v) {
   if (!v) return [];
   return v
     .split(",")
-    .map(x => stripPrefix(x.trim()))
+    .map(x => x.trim())   // ⭐ behåll prefix!
+    //.map(x => stripPrefix(x.trim()))
     .filter(Boolean);
 }
 
