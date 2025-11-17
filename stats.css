@@ -206,3 +206,24 @@
   line-height: 1.45;
   font-style: italic;
 }
+
+@media (max-width: 600px) {
+  .stats-card table {
+    font-size: 0.9rem;
+  }
+
+  .stats-card td:nth-child(1) {
+    max-width: 120px;
+    white-space: normal;
+  }
+
+  .chart-container {
+    padding: 0;
+    margin: 0;
+  }
+
+  .filter-dropdown {
+    width: calc(100vw - 40px);
+  }
+}
+
