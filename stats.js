@@ -605,6 +605,15 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     };
   });
 
+  // ⭐ PATCH: Visa punkt om datasetet endast har en datapunkt
+  datasets.forEach(ds => {
+    const nonZeroPoints = ds.data.filter(v => v > 0).length;
+    if (nonZeroPoints <= 1) {
+      ds.pointRadius = 5;
+      ds.pointHoverRadius = 7;
+    }
+  });
+
   const chart = new Chart(ctx, {
     type: "line",
     data: { labels: years, datasets },
@@ -624,6 +633,7 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   if (canvasId === "chart-region") chartRegion = chart;
   if (canvasId === "chart-topic") chartTopic = chart;
 }
+
 
 // ---------------------------------------------------------------------------
 // DATE PARSER
