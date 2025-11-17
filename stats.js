@@ -585,14 +585,17 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   
   const datasets = tagList.map((tag, i) => {
     const color = palette[i % palette.length];
-    const data = years.map(y =>
-      episodes.filter(
+    const data = years.map(y => {
+      const cnt = episodes.filter(
         e =>
           e.PubDate &&
           e.PubDate.getFullYear() === y &&
           e[tagField]?.includes(tag)
-      ).length
-    );
+      ).length;
+    
+      return cnt === 0 ? null : cnt;   // ⭐ Den viktiga fixen
+    });
+  );
 
     return {
       label: stripPrefix(tag),
