@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
       statsState.filtered = episodes.slice();
 
       buildFilterOptions(episodes);
+      loadStateFromUrl();
+      applyUrlStateToUI();
+      updateUrlFromState();
       applyFiltersAndRender();
     })
     .catch(err => {
@@ -638,3 +641,54 @@ function periodSortValue(v) {
   const n = parseInt(v);
   return isNaN(n) ? 9999 : n;   // icke-numrerade sist
 }
+
+function loadStateFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  ["years", "periods", "regions", "topics"].forEach(key => {
+    if (params.has(key)) {
+      const values = params.get(key).split(",");
+      values.forEach(v => statsState.filters[key].add(v));
+    }
+  });
+}
+
+function updateUrlFromState() {
+  const params = new URLSearchParams();
+
+  if (statsState.filters.years.size)
+    params.set("years", [...statsState.filters.years].join(","));
+
+  if (statsState.filters.periods.size)
+    params.set("periods", [...statsState.filters.periods].join(","));
+
+  if (statsState.filters.regions.size)
+    params.set("regions", [...statsState.filters.regions].join(","));
+
+  if (statsState.filters.topics.size)
+    params.set("topics", [...statsState.filters.topics].join(","));
+
+  const newUrl = `${location.pathname}?${params.toString()}`;
+  history.replaceState({}, "", newUrl);
+}
+
+function applyUrlStateToUI() {
+  ["year","period","region","topic"].forEach(key => {
+    const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+    if (!panel) return;
+
+    const set =
+      key === "year"
+        ? statsState.filters.years
+        : key === "period"
+        ? statsState.filters.periods
+        : key === "region"
+        ? statsState.filters.regions
+        : statsState.filters.topics;
+
+    panel.querySelectorAll("input[type='checkbox']").forEach(input => {
+      input.checked = set.has(input.value);
+    });
+  });
+}
+
