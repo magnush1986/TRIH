@@ -312,7 +312,7 @@ function makeChip(label, value, removeFn) {
   el.className = "chip";
   el.innerHTML = `
     <span class="chip-label">${label}:</span>
-    ${escapeHtml(value)}
+    ${escapeHtml(stripPrefix(value))}
     <button class="chip-x">×</button>
   `;
   el.querySelector(".chip-x").addEventListener("click", removeFn);
