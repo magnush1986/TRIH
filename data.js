@@ -818,17 +818,10 @@ function renderLazyPlaceholder(realGroup) {
 
 function appendLazyGroups(host, sections) {
   sections.forEach(section => {
-    const placeholder = document.createElement("div");
-    placeholder.className = "lazy-placeholder";
-    placeholder.textContent = "Loading…";
-
-    // koppla placeholder → riktig sektion
-    lazyCache.set(placeholder, section);
-
-    host.appendChild(placeholder);
-    lazyObserver.observe(placeholder);
+    const placeholder = renderLazyPlaceholder(section);  // ✅ använd funktionen
+    host.appendChild(placeholder);                       // 👈 enda append
   });
-}
+}}
 
 function groupByMulti(rows, getTagsFn, activeFilterArray) {
   const out = {};
