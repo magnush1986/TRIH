@@ -574,7 +574,6 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   // Alla taggar (topics, periods, regions)
   const tags = new Set();
   episodes.forEach(e => (e[tagField] || []).forEach(t => tags.add(t)));
-
   let tagList = [...tags];
 
   // Sortering efter filtreringar
@@ -622,8 +621,16 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
       yearToValue.set(y, cnt > 0 ? cnt : null);
     });
 
-    // dataset med null-luckor
     const dataArr = years.map(y => yearToValue.get(y));
+
+    // Ny logik: endast prick om isolerad
+    const pointRadiusArr = dataArr.map((v, idx) => {
+      if (v === null) return 0;
+      const prev = dataArr[idx - 1] ?? null;
+      const next = dataArr[idx + 1] ?? null;
+      if (prev === null && next === null) return 4; // isolerad
+      return 0; // annars ingen prick
+    });
 
     datasets.push({
       label: stripPrefix(tag),
@@ -632,19 +639,17 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
       backgroundColor: color + "33",
       tension: 0,
       borderWidth: 2,
-      pointRadius: 5,
-      spanGaps: false, // viktiga! ingen automatisk "fylld" linje
+      spanGaps: false,
+      pointRadius: pointRadiusArr,
+      pointHoverRadius: 6,
       segment: {
         borderDash: ctx => {
           const i = ctx.p0DataIndex;
           const prev = ctx.chart.data.datasets[ctx.datasetIndex].data[i];
           const next = ctx.chart.data.datasets[ctx.datasetIndex].data[i + 1];
 
-          // båda finns → solid linje
           if (prev !== null && next !== null) return [];
-
-          // annars (null-gap) → streckad
-          return [6, 6];
+          return [6, 6]; // streckad vid null-gap
         }
       }
     });
@@ -669,7 +674,6 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   if (canvasId === "chart-region") chartRegion = chart;
   if (canvasId === "chart-topic") chartTopic = chart;
 }
-
 // ---------------------------------------------------------------------------
 // DATE PARSER
 // ---------------------------------------------------------------------------
