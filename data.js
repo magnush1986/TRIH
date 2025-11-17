@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- Bootstrap / Data loading ----------
 function bootstrap() {
+  loadStateFromUrl();
   const q = document.getElementById("q");
   const clearBtn = document.getElementById("clearBtn");
 
@@ -74,6 +75,7 @@ function bootstrap() {
       state.raw = normalized.filter(r => r.Title);
 
       buildFilterOptions(state.raw);
+      applyUrlStateToUI();
       debouncedApply();
     })
     .catch(err => {
@@ -331,10 +333,10 @@ function applyAndRender() {
 
   renderChips();
   renderStats(rows);
-  
+
   const mode = state.groupBy;
   if (mode === "date") {
-    renderGroups(rows);            // befintlig år→månad
+    renderGroups(rows);
   } else if (mode === "period") {
     renderGroupsByPeriod(rows);
   } else if (mode === "region") {
@@ -342,6 +344,9 @@ function applyAndRender() {
   } else if (mode === "topic") {
     renderGroupsByTopic(rows);
   }
+
+  // 🆕 URL-sync
+  updateUrlFromState();
 }
 
 // 🆕 Global debounced render (för filter + pills)
@@ -845,11 +850,83 @@ function groupByMulti(rows, getTagsFn, activeFilterArray) {
   return out;
 }
 
+// 🆕 Läs filter från URL vid sidstart
+function loadStateFromUrl() {
+  const params = new URLSearchParams(window.location.search);
 
+  // Fritext
+  if (params.has("q")) {
+    state.filters.q = params.get("q").toLowerCase();
+  }
 
+  // Group-by
+  if (params.has("group")) {
+    state.groupBy = params.get("group");
+  }
 
+  // Multi-select filters
+  ["years","periods","regions","topics"].forEach(key => {
+    if (params.has(key)) {
+      const raw = params.get(key).split(",");
+      raw.forEach(v => state.filters[key].add(v));
+    }
+  });
+}
 
+// 🆕 Skriv nuvarande filter till URL utan att ladda om sidan
+function updateUrlFromState() {
+  const params = new URLSearchParams();
 
+  if (state.filters.q) params.set("q", state.filters.q);
+  if (state.groupBy) params.set("group", state.groupBy);
 
+  if (state.filters.years.size)
+    params.set("years", [...state.filters.years].join(","));
 
+  if (state.filters.periods.size)
+    params.set("periods", [...state.filters.periods].join(","));
 
+  if (state.filters.regions.size)
+    params.set("regions", [...state.filters.regions].join(","));
+
+  if (state.filters.topics.size)
+    params.set("topics", [...state.filters.topics].join(","));
+
+  const newUrl = `${location.pathname}?${params.toString()}`;
+  history.replaceState({}, "", newUrl);
+}
+
+function applyUrlStateToUI() {
+  const { q, years, periods, regions, topics } = state.filters;
+
+  // Fritext
+  if (q) {
+    document.getElementById("q").value = q;
+  }
+
+  // Checkboxar (alla dropdowns)
+  ["year","period","region","topic"].forEach(key => {
+    const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
+    if (!panel) return;
+
+    const set =
+      key === "year" ? years :
+      key === "period" ? periods :
+      key === "region" ? regions :
+      topics;
+
+    Array.from(panel.querySelectorAll("input[type='checkbox']")).forEach(input => {
+      input.checked = set.has(input.value);
+    });
+  });
+
+  // Group by pills
+  const pills = document.querySelectorAll(".group-pill");
+  pills.forEach(p => {
+    if (p.dataset.group === state.groupBy) {
+      p.classList.add("active");
+    } else {
+      p.classList.remove("active");
+    }
+  });
+}
