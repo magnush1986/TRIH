@@ -547,12 +547,10 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
-  // Stäng ev. tidigare diagram
   if (canvasId === "chart-period" && chartPeriod) chartPeriod.destroy();
   if (canvasId === "chart-region" && chartRegion) chartRegion.destroy();
   if (canvasId === "chart-topic" && chartTopic) chartTopic.destroy();
 
-  // Inget data → tomt diagram
   if (!episodes.length) {
     const empty = new Chart(ctx, {
       type: "line",
@@ -566,44 +564,31 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     return;
   }
 
-  // Vilka år finns i de filtrerade avsnitten?
   const years = [...new Set(
     episodes
       .map(e => e.PubDate?.getFullYear())
       .filter(Boolean)
   )].sort((a, b) => a - b);
 
-  // Samla alla taggar som faktiskt förekommer i de filtrerade avsnitten
   const tags = new Set();
   episodes.forEach(e => (e[tagField] || []).forEach(t => tags.add(t)));
 
-  // Bygg lista med taggar, men respektera aktiva filter
   let tagList = [...tags];
 
   if (tagField === "Period") {
     const active = statsState.filters.periods;
-    if (active.size) {
-      tagList = tagList.filter(t => active.has(t));
-    }
+    if (active.size) tagList = tagList.filter(t => active.has(t));
     tagList = sortWithNoneLast(tagList);
   } else if (tagField === "Region") {
     const active = statsState.filters.regions;
-    if (active.size) {
-      tagList = tagList.filter(t => active.has(t));
-    }
+    if (active.size) tagList = tagList.filter(t => active.has(t));
     tagList = sortAlphaNoneLast(tagList);
   } else if (tagField === "Topic") {
     const active = statsState.filters.topics;
-    if (active.size) {
-      tagList = tagList.filter(t => active.has(t));
-    }
-    tagList = sortAlphaNoneLast(tagList);
-  } else {
-    // Fallback (ska egentligen inte användas här)
+    if (active.size) tagList = tagList.filter(t => active.has(t));
     tagList = sortAlphaNoneLast(tagList);
   }
 
-  // Om inga taggar kvar efter filtrering → tomt diagram
   if (!tagList.length) {
     const empty = new Chart(ctx, {
       type: "line",
@@ -617,11 +602,14 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     return;
   }
 
-  // Bygg datasets, med null där det inte finns avsnitt
-  const datasets = tagList.map((tag, i) => {
+  const datasets = [];
+
+  tagList.forEach((tag, i) => {
     const color = palette[i % palette.length];
 
-    const data = years.map(y => {
+    // Samla faktiska datapunkter
+    const yearToValue = new Map();
+    years.forEach(y => {
       const cnt = episodes.filter(
         e =>
           e.PubDate &&
@@ -629,28 +617,48 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
           e[tagField]?.includes(tag)
       ).length;
 
-      // ⭐ Viktigt: 0 → null → ingen linje över året
-      return cnt === 0 ? null : cnt;
+      if (cnt > 0) yearToValue.set(y, cnt);
     });
 
-    return {
-      label: stripPrefix(tag),
-      data,
-      borderColor: color,
-      backgroundColor: color + "33",
-      tension: 0.3,
-      borderWidth: 2,
-      pointRadius: 0
-    };
-  });
+    if (yearToValue.size === 0) return;
 
-  // ⭐ Om en tagg bara har 1 faktisk datapunkt → visa som punkt
-  datasets.forEach(ds => {
-    const actualPoints = ds.data.filter(v => v !== null);
-    if (actualPoints.length <= 1) {
-      ds.pointRadius = 5;
-      ds.pointHoverRadius = 7;
-      ds.tension = 0; // spelar mindre roll, men bra att den inte buktar
+    const actualYears = [...yearToValue.keys()].sort((a, b) => a - b);
+
+    actualYears.forEach((year, index) => {
+      if (index === 0) return; // ingen linje före första datapunkten
+
+      const prevYear = actualYears[index - 1];
+      const gap = year - prevYear > 1;
+
+      const segment = {
+        label: stripPrefix(tag),
+        data: years.map(y => {
+          if (y === prevYear) return yearToValue.get(prevYear);
+          if (y === year) return yearToValue.get(year);
+          return null;
+        }),
+        borderColor: color,
+        backgroundColor: color + "33",
+        tension: 0,
+        borderWidth: 2,
+        pointRadius: 0,
+        borderDash: gap ? [6, 6] : []  // ⭐ solid eller streckad
+      };
+
+      datasets.push(segment);
+    });
+
+    if (actualYears.length === 1) {
+      datasets.push({
+        label: stripPrefix(tag),
+        data: years.map(y => (y === actualYears[0] ? yearToValue.get(y) : null)),
+        borderColor: color,
+        backgroundColor: color + "33",
+        tension: 0,
+        borderWidth: 2,
+        pointRadius: 5,
+        borderDash: []
+      });
     }
   });
 
