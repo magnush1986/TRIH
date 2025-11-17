@@ -564,17 +564,20 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     return;
   }
 
+  // Alla år i sorterad ordning
   const years = [...new Set(
     episodes
       .map(e => e.PubDate?.getFullYear())
       .filter(Boolean)
   )].sort((a, b) => a - b);
 
+  // Alla taggar (topics, periods, regions)
   const tags = new Set();
   episodes.forEach(e => (e[tagField] || []).forEach(t => tags.add(t)));
 
   let tagList = [...tags];
 
+  // Sortering efter filtreringar
   if (tagField === "Period") {
     const active = statsState.filters.periods;
     if (active.size) tagList = tagList.filter(t => active.has(t));
@@ -607,7 +610,7 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   tagList.forEach((tag, i) => {
     const color = palette[i % palette.length];
 
-    // Samla faktiska datapunkter
+    // karta: year -> count
     const yearToValue = new Map();
     years.forEach(y => {
       const cnt = episodes.filter(
@@ -616,50 +619,35 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
           e.PubDate.getFullYear() === y &&
           e[tagField]?.includes(tag)
       ).length;
-
-      if (cnt > 0) yearToValue.set(y, cnt);
+      yearToValue.set(y, cnt > 0 ? cnt : null);
     });
 
-    if (yearToValue.size === 0) return;
+    // dataset med null-luckor
+    const dataArr = years.map(y => yearToValue.get(y));
 
-    const actualYears = [...yearToValue.keys()].sort((a, b) => a - b);
+    datasets.push({
+      label: stripPrefix(tag),
+      data: dataArr,
+      borderColor: color,
+      backgroundColor: color + "33",
+      tension: 0,
+      borderWidth: 2,
+      pointRadius: 5,
+      spanGaps: false, // viktiga! ingen automatisk "fylld" linje
+      segment: {
+        borderDash: ctx => {
+          const i = ctx.p0DataIndex;
+          const prev = ctx.chart.data.datasets[ctx.datasetIndex].data[i];
+          const next = ctx.chart.data.datasets[ctx.datasetIndex].data[i + 1];
 
-    actualYears.forEach((year, index) => {
-      if (index === 0) return; // ingen linje före första datapunkten
+          // båda finns → solid linje
+          if (prev !== null && next !== null) return [];
 
-      const prevYear = actualYears[index - 1];
-      const gap = year - prevYear > 1;
-
-      const segment = {
-        label: stripPrefix(tag),
-        data: years.map(y => {
-          if (y === prevYear) return yearToValue.get(prevYear);
-          if (y === year) return yearToValue.get(year);
-          return null;
-        }),
-        borderColor: color,
-        backgroundColor: color + "33",
-        tension: 0,
-        borderWidth: 2,
-        pointRadius: 0,
-        borderDash: gap ? [6, 6] : []  // ⭐ solid eller streckad
-      };
-
-      datasets.push(segment);
+          // annars (null-gap) → streckad
+          return [6, 6];
+        }
+      }
     });
-
-    if (actualYears.length === 1) {
-      datasets.push({
-        label: stripPrefix(tag),
-        data: years.map(y => (y === actualYears[0] ? yearToValue.get(y) : null)),
-        borderColor: color,
-        backgroundColor: color + "33",
-        tension: 0,
-        borderWidth: 2,
-        pointRadius: 5,
-        borderDash: []
-      });
-    }
   });
 
   const chart = new Chart(ctx, {
