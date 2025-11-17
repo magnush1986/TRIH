@@ -825,7 +825,7 @@ function appendLazyGroups(host, sections) {
     const placeholder = renderLazyPlaceholder(section);  // ✅ använd funktionen
     host.appendChild(placeholder);                       // 👈 enda append
   });
-}}
+}
 
 function groupByMulti(rows, getTagsFn, activeFilterArray) {
   const out = {};
