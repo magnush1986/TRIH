@@ -288,6 +288,9 @@ function applyFiltersAndRender() {
   renderLineChart("chart-period", rows, "Period", generatePalette(20));
   renderLineChart("chart-region", rows, "Region", generatePalette(15));
   renderLineChart("chart-topic", rows, "Topic", generatePalette(20));
+
+  updateUrlFromState();
+
 }
 
 // ---------------------------------------------------------------------------
