@@ -24,10 +24,17 @@ const state = {
   }
 };
 
-// 🆕 Lazy loading cache
+// 🆕 Lazy loading cache för toppnivå-grupper (år / period / region / topic)
 const lazyCache = new WeakMap();
 
-// 🆕 IntersectionObserver för lazy loading av grupper
+// 🆕 Extra cache för månader + gruppkroppar (nivå 2/3)
+const monthCache = new WeakMap();
+const groupBodyCache = new WeakMap();
+
+// 🆕 Hur många avsnitt som skapas per batch
+const EPISODE_BATCH_SIZE = 16;
+
+// 🆕 IntersectionObserver för lazy loading av grupper (år / period / region / topic)
 const lazyObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
@@ -46,6 +53,45 @@ const lazyObserver = new IntersectionObserver(entries => {
     }
   });
 }, { rootMargin: "200px" });
+
+// 🆕 Observer för månad-placeholders (nivå 2 i date-läge)
+const monthObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    const ph = entry.target;
+    const data = monthCache.get(ph);
+    if (!data) return;
+
+    const { monthIndex, rows } = data;
+    const monthNode = buildMonthNode(monthIndex, rows);
+
+    ph.replaceWith(monthNode);
+    monthObserver.unobserve(ph);
+    monthCache.delete(ph);
+  });
+}, { rootMargin: "150px" });
+
+// 🆕 Observer för gruppkroppar (period/region/topic – avsnittsliste-lazy)
+const groupBodyObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+
+    const ph = entry.target;
+    const rows = groupBodyCache.get(ph);
+    if (!rows) return;
+
+    // Gör om placeholdern till en riktig container och fyll i batchar
+    ph.className = "group-body";
+    ph.textContent = "";
+
+    const sorted = rows.slice().sort((a, b) => b.PublishDate - a.PublishDate);
+    lazyFillEpisodes(ph, sorted);
+
+    groupBodyObserver.unobserve(ph);
+    groupBodyCache.delete(ph);
+  });
+}, { rootMargin: "150px" });
 
 document.addEventListener("DOMContentLoaded", () => {
   bootstrap();
@@ -196,7 +242,7 @@ function wirePillButtons() {
     pills.forEach(p => p.classList.remove("active"));
     panels.forEach(p => p.classList.remove("open"));
 
-    // 🆕 Flytta tillbaka panelerna till host när allt stängs
+    // Flytta tillbaka panelerna till host när allt stängs
     panels.forEach(p => {
       host.appendChild(p);
       p.style.left = "";
@@ -227,11 +273,11 @@ function wirePillButtons() {
       pill.classList.add("active");
       panel.classList.add("open");
 
-      // 🆕 Flytta panelen in i samma wrapper som pillen
+      // Flytta panelen in i samma wrapper som pillen
       const wrapper = pill.closest(".pill-button-wrapper") || pill.parentElement;
       wrapper.appendChild(panel);
 
-      // 🆕 Positionera panel precis under pillen
+      // Positionera panel precis under pillen
       panel.style.position = "absolute";
       panel.style.left = "0px";
       panel.style.top = "100%";
@@ -350,11 +396,11 @@ function applyAndRender() {
     renderGroupsByTopic(rows);
   }
 
-  // 🆕 URL-sync
+  // URL-sync
   updateUrlFromState();
 }
 
-// 🆕 Global debounced render (för filter + pills)
+// Global debounced render (för filter + pills)
 const debouncedApply = debounce(() => applyAndRender(), 220);
 
 function renderChips() {
@@ -408,7 +454,7 @@ function renderGroups(rows) {
   const byYear = groupBy(rows, r => r.PublishDate ? r.PublishDate.getFullYear() : "Unknown");
   const yearKeys = Object.keys(byYear).sort((a,b) => Number(b) - Number(a));
 
-  // 🆕 Skapa fabrik-funktioner per år
+  // Fabriker per år – skapar endast year-section + månads-placeholders
   const factories = yearKeys.map(year => {
     const rowsForYear = byYear[year];
     return () => createRealGroup(year, rowsForYear, "date", "🗓️");
@@ -597,7 +643,7 @@ function monthLabel(m) {
   return new Date(2000, m, 1).toLocaleString("en-US", { month: "long" });
 }
 function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&quot;',"'":'&#39;'}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function parseTags(v) {
@@ -770,7 +816,6 @@ function renderLazyPlaceholder(factoryOrNode) {
 }
 
 function appendLazyGroups(host, factoriesOrNodes) {
-  // host.innerHTML = "";  // redan nollställd i respektive render-funktion
   factoriesOrNodes.forEach(item => {
     const placeholder = renderLazyPlaceholder(item);
     host.appendChild(placeholder);
@@ -886,9 +931,9 @@ function createRealGroup(key, rowsForGroup, groupType, icon = "") {
   const section = document.createElement("section");
   section.className = "year-group";
 
-  section.innerHTML = `<h2 class="year-heading">${icon} ${escapeHtml(stripPrefix(key))}</h2>`;
+  section.innerHTML = `<h2 class="year-heading">${icon} ${escapeHtml(stripPrefix(String(key)))}</h2>`;
 
-  // ⭐ SPECIALFALL: DATE (ÅR → MÅNADER)
+  // ⭐ SPECIALFALL: DATE (ÅR → MÅNADER med lazy månader + lazy avsnitt)
   if (groupType === "date") {
     const byMonth = groupBy(rowsForGroup, r =>
       r.PublishDate ? r.PublishDate.getMonth() : -1
@@ -899,26 +944,86 @@ function createRealGroup(key, rowsForGroup, groupType, icon = "") {
       .sort((a, b) => b - a);
 
     monthKeys.forEach(m => {
-      const monthDiv = document.createElement("div");
-      monthDiv.className = "month-group";
+      const placeholder = document.createElement("div");
+      placeholder.className = "month-placeholder";
 
       const label = m >= 0 ? monthLabel(m) : "Unknown";
-      monthDiv.innerHTML = `<h3 class="month-heading">${label}</h3>`;
+      placeholder.innerHTML = `
+        <h3 class="month-heading">${label}</h3>
+        <div class="lazy-month-label">Loading episodes…</div>
+      `;
 
-      byMonth[m]
-        .sort((a, b) => b.PublishDate - a.PublishDate)
-        .forEach(r => monthDiv.appendChild(renderEpisodeCard(r)));
+      monthCache.set(placeholder, { monthIndex: m, rows: byMonth[m] });
+      monthObserver.observe(placeholder);
 
-      section.appendChild(monthDiv);
+      section.appendChild(placeholder);
     });
 
     return section;
   }
 
-  // ⭐ PERIOD / REGION / TOPIC (enkla grupper)
-  rowsForGroup
-    .sort((a, b) => b.PublishDate - a.PublishDate)
-    .forEach(r => section.appendChild(renderEpisodeCard(r)));
+  // ⭐ PERIOD / REGION / TOPIC (enkla grupper – lazy avsnitt i batchar)
+  const bodyPlaceholder = document.createElement("div");
+  bodyPlaceholder.className = "group-body-placeholder";
+  bodyPlaceholder.textContent = "Loading episodes…";
+
+  groupBodyCache.set(bodyPlaceholder, rowsForGroup);
+  groupBodyObserver.observe(bodyPlaceholder);
+
+  section.appendChild(bodyPlaceholder);
 
   return section;
+}
+
+/* ==========================
+   Hjälpare för lazy rendering
+   ========================== */
+
+// 🆕 Schemalägg arbete "snällt" mot UI-tråden
+function scheduleIdle(fn) {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    window.requestIdleCallback(fn);
+  } else {
+    setTimeout(fn, 16);
+  }
+}
+
+// 🆕 Rendera avsnitt i batchar
+function lazyFillEpisodes(container, rows) {
+  let i = 0;
+  const total = rows.length;
+
+  function step() {
+    let count = 0;
+
+    while (i < total && count < EPISODE_BATCH_SIZE) {
+      container.appendChild(renderEpisodeCard(rows[i]));
+      i++;
+      count++;
+    }
+
+    if (i < total) {
+      scheduleIdle(step);
+    }
+  }
+
+  scheduleIdle(step);
+}
+
+// 🆕 Bygg en riktig månad när monthObserver triggas
+function buildMonthNode(monthIndex, rows) {
+  const monthDiv = document.createElement("div");
+  monthDiv.className = "month-group";
+
+  const label = monthIndex >= 0 ? monthLabel(monthIndex) : "Unknown";
+  monthDiv.innerHTML = `<h3 class="month-heading">${label}</h3>`;
+
+  const container = document.createElement("div");
+  container.className = "month-episodes";
+  monthDiv.appendChild(container);
+
+  const sorted = rows.slice().sort((a, b) => b.PublishDate - a.PublishDate);
+  lazyFillEpisodes(container, sorted);
+
+  return monthDiv;
 }
