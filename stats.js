@@ -547,10 +547,12 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
+  // Destroy old chart
   if (canvasId === "chart-period" && chartPeriod) chartPeriod.destroy();
   if (canvasId === "chart-region" && chartRegion) chartRegion.destroy();
   if (canvasId === "chart-topic" && chartTopic) chartTopic.destroy();
 
+  // Empty state
   if (!episodes.length) {
     const empty = new Chart(ctx, {
       type: "line",
@@ -564,27 +566,31 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     return;
   }
 
+  // Extract years present in filtered dataset
   const years = [...new Set(
     episodes
       .map(e => e.PubDate?.getFullYear())
       .filter(Boolean)
   )].sort((a, b) => a - b);
 
+  // Collect all tag names
   const tags = new Set();
   episodes.forEach(e =>
     (e[tagField] || []).forEach(t => tags.add(t))
   );
 
-  // Sortera taggar efter typ
+  // Sort tag list
   let tagList = [...tags];
   if (tagField === "Period") {
     tagList = sortWithNoneLast(tagList);
   } else {
     tagList = sortAlphaNoneLast(tagList);
   }
-  
+
+  // Build datasets
   const datasets = tagList.map((tag, i) => {
     const color = palette[i % palette.length];
+
     const data = years.map(y => {
       const cnt = episodes.filter(
         e =>
@@ -592,10 +598,10 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
           e.PubDate.getFullYear() === y &&
           e[tagField]?.includes(tag)
       ).length;
-    
-      return cnt === 0 ? null : cnt;   // ⭐ Den viktiga fixen
+
+      // ⭐ Viktigt: noll ska vara null = ingen linje
+      return cnt === 0 ? null : cnt;
     });
-  );
 
     return {
       label: stripPrefix(tag),
@@ -608,15 +614,18 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     };
   });
 
-  // ⭐ PATCH: Visa punkt om datasetet endast har en datapunkt
+  // ⭐ Visa punkt istället för linje om datasetet bara har 1 datapunkt
   datasets.forEach(ds => {
-    const nonZeroPoints = ds.data.filter(v => v > 0).length;
-    if (nonZeroPoints <= 1) {
+    const actualPoints = ds.data.filter(v => v !== null);
+
+    if (actualPoints.length <= 1) {
       ds.pointRadius = 5;
       ds.pointHoverRadius = 7;
+      ds.tension = 0; // rak linje (men bara punkt visas ändå)
     }
   });
 
+  // Build chart
   const chart = new Chart(ctx, {
     type: "line",
     data: { labels: years, datasets },
@@ -632,11 +641,11 @@ function renderLineChart(canvasId, episodes, tagField, palette) {
     }
   });
 
+  // Assign global reference
   if (canvasId === "chart-period") chartPeriod = chart;
   if (canvasId === "chart-region") chartRegion = chart;
   if (canvasId === "chart-topic") chartTopic = chart;
 }
-
 
 // ---------------------------------------------------------------------------
 // DATE PARSER
