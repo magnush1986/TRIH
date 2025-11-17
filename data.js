@@ -378,7 +378,11 @@ function uncheck(key, value) {
 function chip(label, value, onRemove) {
   const el = document.createElement("div");
   el.className = "chip";
-  el.innerHTML = `<span class="chip-label">${label}:</span> ${escapeHtml(value)} <button type="button" class="chip-x" aria-label="Remove">×</button>`;
+  el.innerHTML = `
+    <span class="chip-label">${label}:</span> 
+    ${escapeHtml(stripPrefix(value))}
+    <button type="button" class="chip-x" aria-label="Remove">×</button>
+  `;
   el.querySelector(".chip-x").addEventListener("click", onRemove);
   return el;
 }
