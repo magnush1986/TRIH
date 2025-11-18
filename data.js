@@ -412,6 +412,8 @@ function applyAndRender() {
     renderGroupsByRegion(rows);
   } else if (mode === "topic") {
     renderGroupsByTopic(rows);
+  } else if (mode === "series") {
+    renderGroupsBySeries(rows);
   }
 
   // URL-sync
@@ -1053,3 +1055,50 @@ function buildMonthNode(monthIndex, rows) {
 
   return monthDiv;
 }
+
+function renderGroupsBySeries(rows) {
+  const host = document.getElementById("list");
+  host.innerHTML = "";
+
+  // Group episodes by Series (multi-select)
+  const groups = groupByMulti(
+    rows,
+    r => r.Series && r.Series.length ? r.Series : ["No series assigned"],
+    [...state.filters.series]
+  );
+
+  // Sort Series alphabetically, "No series assigned" last
+  const keys = Object.keys(groups).sort((a, b) => {
+    const aIsNone = a.startsWith("No ");
+    const bIsNone = b.startsWith("No ");
+    if (aIsNone && !bIsNone) return 1;
+    if (!aIsNone && bIsNone) return -1;
+    return a.localeCompare(b);
+  });
+
+  const factories = keys.map(key => {
+    const rowsForSeries = groups[key];
+
+    // Sort within each Series:
+    // 1. Episode number ascending (numeric)
+    // 2. If no episode number → alphabetical title
+    rowsForSeries.sort((a, b) => {
+      const ea = a.Episode;
+      const eb = b.Episode;
+
+      const aIsNum = ea != null && !isNaN(ea);
+      const bIsNum = eb != null && !isNaN(eb);
+
+      if (aIsNum && bIsNum) return ea - eb;
+      if (aIsNum && !bIsNum) return -1;
+      if (!aIsNum && bIsNum) return 1;
+
+      return a.Title.localeCompare(b.Title);
+    });
+
+    return () => createRealGroup(key, rowsForSeries, "series", "🎬");
+  });
+
+  appendLazyGroups(host, factories);
+}
+
