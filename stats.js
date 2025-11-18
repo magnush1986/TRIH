@@ -378,7 +378,7 @@ function rebuildFilterOptionsCascade() {
     { key: "period", set: periodSet, active: periods.size > 0 },
     { key: "region", set: regionSet, active: regions.size > 0 },
     { key: "topic", set: topicSet, active: topics.size > 0 },
-    { key: "series", set: seriesSet, active: series.size > 0 }  // ⭐
+    { key: "series", set: seriesSet, active: statsState.filters.series.size > 0 }  // ⭐
   ];
 
   dropdowns.forEach(({ key, set, active }) => {
