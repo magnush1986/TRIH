@@ -410,7 +410,10 @@ function rebuildFilterOptionsCascade() {
           ? periods
           : key === "region"
           ? regions
-          : topics;
+          : key === "topic"
+          ? topics
+          : series;
+
 
       input.checked = owningSet.has(v);
       input.addEventListener("change", () => {
