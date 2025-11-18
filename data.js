@@ -879,7 +879,7 @@ function loadStateFromUrl() {
   }
 
   // Multi-select filters
-  ["years","periods","regions","topics"].forEach(key => {
+  ["years","periods","regions","topics","series"].forEach(key => {
     if (params.has(key)) {
       const raw = params.get(key).split(",");
       raw.forEach(v => state.filters[key].add(v));
@@ -905,6 +905,9 @@ function updateUrlFromState() {
 
   if (state.filters.topics.size)
     params.set("topics", [...state.filters.topics].join(","));
+  
+  if (state.filters.series.size)
+  params.set("series", [...state.filters.series].join(","));
 
   const newUrl = `${location.pathname}?${params.toString()}`;
   history.replaceState({}, "", newUrl);
@@ -919,7 +922,7 @@ function applyUrlStateToUI() {
   }
 
   // Checkboxar (alla dropdowns)
-  ["year","period","region","topic"].forEach(key => {
+  ["year","period","region","topic","series"].forEach(key => {
     const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
     if (!panel) return;
 
@@ -927,7 +930,8 @@ function applyUrlStateToUI() {
       key === "year" ? years :
       key === "period" ? periods :
       key === "region" ? regions :
-      topics;
+      key === "topic" ? topics :
+      series;
 
     Array.from(panel.querySelectorAll("input[type='checkbox']")).forEach(input => {
       input.checked = set.has(input.value);
