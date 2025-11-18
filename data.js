@@ -966,12 +966,16 @@ function applyUrlStateToUI() {
    ========================== */
 
 function createRealGroup(key, rowsForGroup, groupType, icon = "") {
+  // Skapa sektion med titel
   const section = document.createElement("section");
   section.className = "year-group";
 
-  section.innerHTML = `<h2 class="year-heading">${icon} ${escapeHtml(stripPrefix(String(key)))}</h2>`;
+  const heading = document.createElement("h2");
+  heading.className = "year-heading";
+  heading.textContent = `${icon} ${stripPrefix(String(key))}`;
+  section.appendChild(heading);
 
-  // ⭐ SPECIALFALL: DATE (ÅR → MÅNADER med lazy månader + lazy avsnitt)
+  // ⭐ SPECIALFALL: DATE-GRUPPER — behåll månads-lazy
   if (groupType === "date") {
     const byMonth = groupBy(rowsForGroup, r =>
       r.PublishDate ? r.PublishDate.getMonth() : -1
@@ -982,33 +986,37 @@ function createRealGroup(key, rowsForGroup, groupType, icon = "") {
       .sort((a, b) => b - a);
 
     monthKeys.forEach(m => {
-      const placeholder = document.createElement("div");
-      placeholder.className = "month-placeholder";
+      const ph = document.createElement("div");
+      ph.className = "month-placeholder";
 
       const label = m >= 0 ? monthLabel(m) : "Unknown";
-      placeholder.innerHTML = `
+
+      // Minimal HTML + CSS gör placeringen snabbare
+      ph.innerHTML = `
         <h3 class="month-heading">${label}</h3>
         <div class="lazy-month-label">Loading episodes…</div>
       `;
 
-      monthCache.set(placeholder, { monthIndex: m, rows: byMonth[m] });
-      monthObserver.observe(placeholder);
+      // Koppla data för lazy-build
+      monthCache.set(ph, { monthIndex: m, rows: byMonth[m] });
+      monthObserver.observe(ph);
 
-      section.appendChild(placeholder);
+      section.appendChild(ph);
     });
 
     return section;
   }
 
-  // ⭐ PERIOD / REGION / TOPIC (enkla grupper – lazy avsnitt i batchar)
-  const bodyPlaceholder = document.createElement("div");
-  bodyPlaceholder.className = "group-body-placeholder";
-  bodyPlaceholder.textContent = "Loading episodes…";
+  // ⭐ ÖVRIGA GRUPPER — enkel lazy body (period/region/topic/series)
+  const bodyPh = document.createElement("div");
+  bodyPh.className = "group-body-placeholder";
+  bodyPh.textContent = "Loading episodes…";
 
-  groupBodyCache.set(bodyPlaceholder, { rows: rowsForGroup, groupType });
-  groupBodyObserver.observe(bodyPlaceholder);
+  // Koppla data för lazy-build
+  groupBodyCache.set(bodyPh, { rows: rowsForGroup, groupType });
+  groupBodyObserver.observe(bodyPh);
 
-  section.appendChild(bodyPlaceholder);
+  section.appendChild(bodyPh);
 
   return section;
 }
