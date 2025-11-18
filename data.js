@@ -1083,20 +1083,31 @@ function renderGroupsBySeries(rows) {
     // 1. Episode number ascending (numeric)
     // 2. If no episode number → alphabetical title
     rowsForSeries.sort((a, b) => {
-      const ea = a.Episode;
-      const eb = b.Episode;
-
-      const aIsNum = ea != null && !isNaN(ea);
-      const bIsNum = eb != null && !isNaN(eb);
-
+      // Extract leading episode number from Title
+      const extractNum = t => {
+        const m = /^(\d+)/.exec(t);
+        return m ? Number(m[1]) : null;
+      };
+    
+      const ea = extractNum(a.Title);
+      const eb = extractNum(b.Title);
+    
+      const aIsNum = ea !== null;
+      const bIsNum = eb !== null;
+    
+      // 1. If both have numbers → numeric ASC
       if (aIsNum && bIsNum) return ea - eb;
+    
+      // 2. If only one has number → numbers first
       if (aIsNum && !bIsNum) return -1;
       if (!aIsNum && bIsNum) return 1;
-
+    
+      // 3. If neither has number → alphabetical ASC
       return a.Title.localeCompare(b.Title);
     });
 
-    return () => createRealGroup(key, rowsForSeries, "series", "🎬");
+
+    return () => createRealGroup(key, rowsForSeries, "series", "📚");
   });
 
   appendLazyGroups(host, factories);
