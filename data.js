@@ -73,21 +73,30 @@ const monthObserver = new IntersectionObserver(entries => {
   });
 }, { rootMargin: "150px" });
 
-// 🆕 Observer för gruppkroppar (period/region/topic – avsnittsliste-lazy)
+// 🆕 Observer för gruppkroppar (period/region/topic/series – avsnittsliste-lazy)
 const groupBodyObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
 
     const ph = entry.target;
-    const rows = groupBodyCache.get(ph);
-    if (!rows) return;
+    const data = groupBodyCache.get(ph);
+    if (!data) return;
 
-    // Gör om placeholdern till en riktig container och fyll i batchar
+    const { rows, groupType } = data;
+
+    // Gör om placeholdern till en riktig container
     ph.className = "group-body";
     ph.textContent = "";
 
-    const sorted = rows.slice().sort((a, b) => b.PublishDate - a.PublishDate);
-    lazyFillEpisodes(ph, sorted);
+    // 🆕 Endast period/region/topic ska sorteras efter PublishDate
+    let finalRows = rows;
+
+    if (groupType !== "series") {
+      finalRows = rows.slice().sort((a, b) => b.PublishDate - a.PublishDate);
+    }
+
+    // Fyll avsnitten i batchar
+    lazyFillEpisodes(ph, finalRows);
 
     groupBodyObserver.unobserve(ph);
     groupBodyCache.delete(ph);
@@ -97,6 +106,7 @@ const groupBodyObserver = new IntersectionObserver(entries => {
 document.addEventListener("DOMContentLoaded", () => {
   bootstrap();
 });
+
 
 // ---------- Bootstrap / Data loading ----------
 function bootstrap() {
@@ -995,7 +1005,7 @@ function createRealGroup(key, rowsForGroup, groupType, icon = "") {
   bodyPlaceholder.className = "group-body-placeholder";
   bodyPlaceholder.textContent = "Loading episodes…";
 
-  groupBodyCache.set(bodyPlaceholder, rowsForGroup);
+  groupBodyCache.set(bodyPlaceholder, { rows: rowsForGroup, groupType });
   groupBodyObserver.observe(bodyPlaceholder);
 
   section.appendChild(bodyPlaceholder);
