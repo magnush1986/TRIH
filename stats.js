@@ -354,7 +354,7 @@ function uncheck(key, value) {
 // CASCADE: rebuild available filter options based on filtered dataset
 // ---------------------------------------------------------------------------
 function rebuildFilterOptionsCascade() {
-  const { years, periods, regions, topics } = statsState.filters;
+  const { years, periods, regions, topics, series } = statsState.filters;
   const rows = statsState.filtered;
 
   const yearSet = new Set();
