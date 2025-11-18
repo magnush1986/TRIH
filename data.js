@@ -914,7 +914,7 @@ function updateUrlFromState() {
 }
 
 function applyUrlStateToUI() {
-  const { q, years, periods, regions, topics } = state.filters;
+  const { q, years, periods, regions, topics, series } = state.filters;
 
   // Fritext
   if (q) {
