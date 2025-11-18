@@ -215,7 +215,7 @@ function resetFilters() {
 // APPLY FILTERS AND RENDER ALL OUTPUT
 // ---------------------------------------------------------------------------
 function applyFiltersAndRender() {
-  const { years, periods, regions, topics } = statsState.filters;
+  const { years, periods, regions, topics, series } = statsState.filters;
 
   let rows = statsState.raw.filter(r => {
     if (years.size) {
