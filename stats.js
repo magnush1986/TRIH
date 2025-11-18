@@ -11,7 +11,8 @@ const statsState = {
     years: new Set(),
     periods: new Set(),
     regions: new Set(),
-    topics: new Set()
+    topics: new Set(),
+    series: new Set() 
   }
 };
 
@@ -34,7 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Region: parseTags(r["Region"]),
         Period: parseTags(r["Period"]),
         Topic: parseTags(r["Topic"]),
-        PubDate: parseDate(r["Publish Date"])
+        PubDate: parseDate(r["Publish Date"]),
+        Series: parseTags(r["Series"])
       }));
 
       const episodes = normalized.filter(r => r.Title);
@@ -81,6 +83,7 @@ function buildFilterOptions(rows) {
   const periods = new Set();
   const regions = new Set();
   const topics = new Set();
+  const series = new Set();
 
   rows.forEach(r => {
     const y = r.PubDate ? r.PubDate.getFullYear() : null;
@@ -89,6 +92,7 @@ function buildFilterOptions(rows) {
     (r.Period.length ? r.Period : ["No period assigned"]).forEach(p => periods.add(p));
     (r.Region.length ? r.Region : ["No region assigned"]).forEach(g => regions.add(g));
     (r.Topic.length ? r.Topic : ["No topic assigned"]).forEach(t => topics.add(t));
+    (r.Series.length ? r.Series : ["No series assigned"]).forEach(s => series.add(s));
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -98,10 +102,11 @@ function buildFilterOptions(rows) {
     year: [...years].sort((a, b) => Number(b) - Number(a)),
     period: sortWithNoneLast([...periods]),
     region: sortAlphaNoneLast([...regions]),
-    topic: sortAlphaNoneLast([...topics])
+    topic: sortAlphaNoneLast([...topics]),
+    series: sortAlphaNoneLast([...series]) 
   };
 
-  ["year", "period", "region", "topic"].forEach(key => {
+  ["year","period","region","topic","series"].forEach(key => {
     const panel = document.createElement("div");
     panel.className = "filter-dropdown";
     panel.dataset.filter = key;
@@ -120,13 +125,11 @@ function buildFilterOptions(rows) {
 
       input.addEventListener("change", () => {
         const set =
-          key === "year"
-            ? statsState.filters.years
-            : key === "period"
-            ? statsState.filters.periods
-            : key === "region"
-            ? statsState.filters.regions
-            : statsState.filters.topics;
+          key === "year"    ? statsState.filters.years :
+          key === "period"  ? statsState.filters.periods :
+          key === "region"  ? statsState.filters.regions :
+          key === "topic"   ? statsState.filters.topics :
+          statsState.filters.series; 
 
         input.checked ? set.add(v) : set.delete(v);
         applyFiltersAndRender();
@@ -235,6 +238,11 @@ function applyFiltersAndRender() {
       if (!tags.some(t => topics.has(t))) return false;
     }
 
+    if (series.size) {
+      const tags = r.Series.length ? r.Series : ["No series assigned"];
+      if (!tags.some(s => series.has(s))) return false;
+    }
+
     return true;
   });
 
@@ -297,7 +305,7 @@ function applyFiltersAndRender() {
 // CHIPS
 // ---------------------------------------------------------------------------
 function renderChips() {
-  const { years, periods, regions, topics } = statsState.filters;
+  const { years, periods, regions, topics, series } = statsState.filters;
   const box = document.getElementById("activeChips");
   box.innerHTML = "";
 
@@ -305,6 +313,7 @@ function renderChips() {
   periods.forEach(v => box.appendChild(makeChip("Period", v, () => removeFilter("period", v))));
   regions.forEach(v => box.appendChild(makeChip("Region", v, () => removeFilter("region", v))));
   topics.forEach(v => box.appendChild(makeChip("Topic", v, () => removeFilter("topic", v))));
+  series.forEach(v => box.appendChild(makeChip("Series", v, () => removeFilter("series", v))));
 }
 
 function makeChip(label, value, removeFn) {
@@ -321,13 +330,12 @@ function makeChip(label, value, removeFn) {
 
 function removeFilter(key, value) {
   const set =
-    key === "year"
-      ? statsState.filters.years
-      : key === "period"
-      ? statsState.filters.periods
-      : key === "region"
-      ? statsState.filters.regions
-      : statsState.filters.topics;
+    key === "year"    ? statsState.filters.years :
+    key === "period"  ? statsState.filters.periods :
+    key === "region"  ? statsState.filters.regions :
+    key === "topic"   ? statsState.filters.topics :
+    statsState.filters.series;   
+
 
   set.delete(value);
   uncheck(key, value);
@@ -353,6 +361,7 @@ function rebuildFilterOptionsCascade() {
   const periodSet = new Set();
   const regionSet = new Set();
   const topicSet = new Set();
+  const seriesSet = new Set();
 
   rows.forEach(r => {
     const y = r.PubDate ? String(r.PubDate.getFullYear()) : null;
@@ -361,13 +370,15 @@ function rebuildFilterOptionsCascade() {
     (r.Period.length ? r.Period : ["No period assigned"]).forEach(v => periodSet.add(v));
     (r.Region.length ? r.Region : ["No region assigned"]).forEach(v => regionSet.add(v));
     (r.Topic.length ? r.Topic : ["No topic assigned"]).forEach(v => topicSet.add(v));
+    (r.Series.length ? r.Series : ["No series assigned"]).forEach(v => seriesSet.add(v));
   });
 
   const dropdowns = [
     { key: "year", set: yearSet, active: years.size > 0 },
     { key: "period", set: periodSet, active: periods.size > 0 },
     { key: "region", set: regionSet, active: regions.size > 0 },
-    { key: "topic", set: topicSet, active: topics.size > 0 }
+    { key: "topic", set: topicSet, active: topics.size > 0 },
+    { key: "series", set: seriesSet, active: series.size > 0 }  // ⭐
   ];
 
   dropdowns.forEach(({ key, set, active }) => {
