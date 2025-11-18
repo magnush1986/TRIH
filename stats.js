@@ -708,7 +708,7 @@ function periodSortValue(v) {
 function loadStateFromUrl() {
   const params = new URLSearchParams(window.location.search);
 
-  ["years", "periods", "regions", "topics"].forEach(key => {
+  ["years", "periods", "regions", "topics", "series"].forEach(key => {
     if (params.has(key)) {
       const values = params.get(key).split(",");
       values.forEach(v => statsState.filters[key].add(v));
@@ -731,12 +731,15 @@ function updateUrlFromState() {
   if (statsState.filters.topics.size)
     params.set("topics", [...statsState.filters.topics].join(","));
 
+  if (statsState.filters.series.size)                                
+    params.set("series", [...statsState.filters.series].join(","));
+
   const newUrl = `${location.pathname}?${params.toString()}`;
   history.replaceState({}, "", newUrl);
 }
 
 function applyUrlStateToUI() {
-  ["year","period","region","topic"].forEach(key => {
+  ["year","period","region","topic","series"].forEach(key => {
     const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
     if (!panel) return;
 
@@ -747,7 +750,9 @@ function applyUrlStateToUI() {
         ? statsState.filters.periods
         : key === "region"
         ? statsState.filters.regions
-        : statsState.filters.topics;
+        : key === "topic"
+        ? statsState.filters.topics
+        : statsState.filters.series;  
 
     panel.querySelectorAll("input[type='checkbox']").forEach(input => {
       input.checked = set.has(input.value);
