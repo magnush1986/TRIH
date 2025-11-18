@@ -6,7 +6,7 @@
  * - Collapsed episode cards; click to expand
  */
 
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZC7Oawx266328_YGXnVt5d970Jbca-XIsYkbQQfp78LKLOsuLqZjPyoAmeto9rrhojtEBi0zMLkOd/pub?output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJCZMVCGsqvaIkm4vFBUXeF39Jnmf_mTS2T8F1oQa40vP9Oys19OsqlN4WSZG8BArc2aK4WVOsfvqC/pub?output=csv";
 
 // Expected columns (use what exists; missing fields are handled):
 // Episode, Title, Publish Date, Description, Audio URL, Region, Period, Topic
