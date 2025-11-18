@@ -20,7 +20,8 @@ const state = {
     years: new Set(),
     periods: new Set(),
     regions: new Set(),
-    topics: new Set()
+    topics: new Set(),
+    series: new Set() 
   }
 };
 
@@ -121,7 +122,8 @@ function bootstrap() {
         AudioURL: (r["Audio URL"] || "").trim(),
         Region: parseTags(r["Region"]),
         Period: parseTags(r["Period"]),
-        Topic: parseTags(r["Topic"])
+        Topic: parseTags(r["Topic"]),
+        Series: parseTags(r["Series"])
       }));
 
       state.raw = normalized.filter(r => r.Title);
@@ -155,6 +157,7 @@ function buildFilterOptions(rows) {
   const periods = new Set();
   const regions = new Set();
   const topics = new Set();
+  const series = new Set();
 
   rows.forEach(r => {
     const y = r.PublishDate ? r.PublishDate.getFullYear() : null;
@@ -177,6 +180,12 @@ function buildFilterOptions(rows) {
     } else {
       topics.add("No topic assigned");
     }
+
+    if (r.Series && r.Series.length) {
+      r.Series.forEach(s => series.add(s));
+    } else {
+      series.add("No series assigned");
+    }    
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -186,10 +195,11 @@ function buildFilterOptions(rows) {
     year: arrDesc([...years]),
     period: sortWithNoneLast([...periods]),
     region: sortAlphaNoneLast([...regions]),
-    topic: sortAlphaNoneLast([...topics])
+    topic: sortAlphaNoneLast([...topics]),
+    series: sortAlphaNoneLast([...series]) 
   };
 
-  ["year","period","region","topic"].forEach(key => {
+  ["year","period","region","topic","series"].forEach(key => {
     const panel = document.createElement("div");
     panel.className = "filter-dropdown";
     panel.dataset.filter = key;
@@ -208,10 +218,12 @@ function buildFilterOptions(rows) {
       input.value = v;
 
       input.addEventListener("change", () => {
-        const set = key === "year" ? state.filters.years
-                 : key === "period" ? state.filters.periods
-                 : key === "region" ? state.filters.regions
-                 : state.filters.topics;
+        const set = 
+          key === "year"    ? state.filters.years :
+          key === "period"  ? state.filters.periods :
+          key === "region"  ? state.filters.regions :
+          key === "topic"   ? state.filters.topics :
+          state.filters.series;
 
         if (input.checked) {
           set.add(v);
@@ -333,7 +345,7 @@ function resetFilters() {
 
 // ---------- Apply filters + render ----------
 function applyAndRender() {
-  const { q, years, periods, regions, topics } = state.filters;
+  const { q, years, periods, regions, topics, series } = state.filters;
 
   let rows = state.raw.slice();
 
@@ -361,6 +373,12 @@ function applyAndRender() {
     if (topics.size) {
       const tags = r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"];
       if (!tags.some(tag => topics.has(tag))) return false;
+    }
+
+    // Series
+    if (series.size) {
+      const tags = r.Series && r.Series.length ? r.Series : ["No series assigned"];
+      if (!tags.some(tag => series.has(tag))) return false;
     }
 
     return true;
@@ -406,7 +424,7 @@ const debouncedApply = debounce(() => applyAndRender(), 220);
 function renderChips() {
   const chipBox = document.getElementById("activeChips");
   chipBox.innerHTML = "";
-  const { years, periods, regions, topics, q } = state.filters;
+  const { years, periods, regions, topics, series, q } = state.filters;
 
   const parts = [];
   if (q) parts.push(chip("Search", q, () => { document.getElementById("q").value=""; state.filters.q=""; debouncedApply(); }));
@@ -414,6 +432,7 @@ function renderChips() {
   periods.forEach(v => parts.push(chip("Period", v, () => { periods.delete(v); uncheck("period", v); debouncedApply(); })));
   regions.forEach(v => parts.push(chip("Region", v, () => { regions.delete(v); uncheck("region", v); debouncedApply(); })));
   topics.forEach(v => parts.push(chip("Topic", v, () => { topics.delete(v); uncheck("topic", v); debouncedApply(); })));
+  series.forEach(v => parts.push(chip("Series", v, () => { series.delete(v); uncheck("series", v); debouncedApply();})));
 
   parts.forEach(el => chipBox.appendChild(el));
 }
@@ -698,7 +717,7 @@ function megaphoneGuidToPodlink(guid) {
 }
 
 function rebuildFilterOptionsCascade() {
-  const { years, periods, regions, topics } = state.filters;
+  const { years, periods, regions, topics, series } = state.filters;
 
   // 1. Ta fram redan filtrerade rader
   const rows = state.filtered;
@@ -708,6 +727,7 @@ function rebuildFilterOptionsCascade() {
   const periodSet = new Set();
   const regionSet = new Set();
   const topicSet = new Set();
+  const seriesSet = new Set();
 
   rows.forEach(r => {
     const y = r.PublishDate ? String(r.PublishDate.getFullYear()) : null;
@@ -721,6 +741,9 @@ function rebuildFilterOptionsCascade() {
 
     const t = r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"];
     t.forEach(v => topicSet.add(v));
+    
+    const s = r.Series && r.Series.length ? r.Series : ["No series assigned"];
+    s.forEach(v => seriesSet.add(v));
   });
 
   // 3. För varje dropdown – bygg bara om om det INTE är filtret som användaren valt
@@ -729,6 +752,7 @@ function rebuildFilterOptionsCascade() {
     { key: "period",  set: periodSet,  active: periods.size > 0 },
     { key: "region",  set: regionSet,  active: regions.size > 0 },
     { key: "topic",   set: topicSet,   active: topics.size > 0 },
+    { key: "series",  set: seriesSet,  active: series.size > 0 }
   ];
 
   dropdowns.forEach(({ key, set, active }) => {
@@ -758,13 +782,11 @@ function rebuildFilterOptionsCascade() {
 
       // återställ tidigare val om det fanns
       const owningSet =
-        key === "year"
-          ? years
-          : key === "period"
-          ? periods
-          : key === "region"
-          ? regions
-          : topics;
+        key === "year"    ? years :
+        key === "period"  ? periods :
+        key === "region"  ? regions :
+        key === "topic"   ? topics :
+        series; 
 
       input.checked = owningSet.has(v);
 
