@@ -38,103 +38,107 @@
 
 <main class="layout">
 
-  <h2>How tagging works</h2>
-  <p>
-    The Episode Explorer relies entirely on community tagging. Every episode is linked to one or more
-    <strong>Periods</strong>, <strong>Regions</strong>, <strong>Topics</strong> and sometimes a <strong>Series</strong>.
-    These tags power all filters, charts, groupings and statistics across the site.
-  </p>
-  <p>
-    To keep the dataset consistent, the shared Google Sheet uses locked dropdown lists so that categories remain stable and clean.
-  </p>
+  <!-- INTRO -->
+  <section class="intro">
+    <h2>How tagging works</h2>
+    <p>
+      The Episode Explorer relies on community tagging. Every episode is linked to one or more
+      <strong>Periods</strong>, <strong>Regions</strong>, <strong>Topics</strong>, and sometimes a <strong>Series</strong>.
+      These tags power all filters, charts, groupings and statistics across the site.
+    </p>
+    <p>
+      To keep things consistent, the tagging sheet uses locked dropdown lists. This ensures that categories
+      remain stable across contributions.
+    </p>
+  </section>
 
-  <!-- SECTION 1 -->
-  <details open>
-    <summary><strong>Period, Region & Topic</strong></summary>
-    <div class="details-content">
-      <p>
-        These fields use <strong>pre-defined multi-select dropdowns</strong>. You may choose as many as needed,
-        but you <strong>cannot</strong> create new values.
-      </p>
+  <!-- PERIOD / REGION / TOPIC -->
+  <section class="contribute-card" style="margin-top: 2rem;">
+    <h3>Period, Region & Topic</h3>
 
-      <p>Examples of inconsistent tagging this prevents:</p>
-      <ul>
-        <li>“Early Medieval” vs “Early-Medieval”</li>
-        <li>“Middle East” vs “ME”</li>
-        <li>“America” vs “The Americas”</li>
-      </ul>
+    <p>
+      These fields use <strong>pre-defined multi-select dropdowns</strong>. You may choose as many as needed,
+      but you <strong>cannot</strong> create new values.
+    </p>
 
-      <p>Allowed values are centrally maintained for consistency.</p>
-    </div>
-  </details>
+    <p>Examples of inconsistent tagging this prevents:</p>
+    <ul>
+      <li>“Early Medieval” vs “Early-Medieval”</li>
+      <li>“Middle East” vs “ME”</li>
+      <li>“America” vs “The Americas”</li>
+    </ul>
 
-  <!-- SECTION 2 -->
-  <details>
-    <summary><strong>Series</strong></summary>
-    <div class="details-content">
-      <p>
-        The Series field is <strong>auto-suggested</strong> based on the episode title, but you may freely edit or correct it.
-        It is the <strong>only</strong> column where free text is allowed.
-      </p>
-    </div>
-  </details>
+    <p>
+      Allowed values are centrally maintained to keep filtering predictable and clean.
+    </p>
+  </section>
 
-  <!-- SECTION 3 -->
-  <details>
-    <summary><strong>Locked fields</strong></summary>
-    <div class="details-content">
-      <p>
-        Episode titles, descriptions, dates, IDs and all technical metadata are imported automatically from the official
-        RSS feed and are <strong>locked</strong> from editing.  
-      </p>
-      <p>Only the tag fields described above can be modified.</p>
-    </div>
-  </details>
+  <!-- SERIES -->
+  <section class="contribute-card">
+    <h3>Series</h3>
 
-  <!-- SECTION 4 -->
-  <details open>
-    <summary><strong>Contribute to tagging</strong></summary>
-    <div class="details-content">
-      <p>
-        You can edit Period, Region and Topic — all of them allow multiple selections.
-        Series is semi-automatic and can be changed manually.
-      </p>
+    <p>
+      The Series field is <strong>auto-suggested</strong> from the episode title, but you may freely edit or correct it.
+    </p>
+    <p>
+      It is the <strong>only</strong> editable free-text field. All other tagging fields use controlled lists
+      to prevent accidental creation of new categories.
+    </p>
+  </section>
 
-      <p>All other fields remain locked. Historians prefer their data unpillaged.</p>
+  <!-- LOCKED FIELDS -->
+  <section class="contribute-card">
+    <h3>Locked fields</h3>
 
-      <p>
-        If someone tags an episode wildly incorrectly, don’t worry —
-        another historian will quietly invade and restore order.
-      </p>
+    <p>
+      Episode titles, descriptions, dates, IDs, and all technical metadata are imported automatically
+      from the official RSS feed and are <strong>locked</strong> for editing.
+    </p>
 
-      <p>You can update these fields directly in the community tagging sheet:</p>
+    <p>Only the tag fields described above are editable.</p>
+  </section>
 
-      <p>
-        <a href="https://docs.google.com/spreadsheets/d/1aqBur33aJGxYfpr4-Yb5z8cgEvRcGzHQlKna5QlaqA4/edit?usp=sharing"
-           target="_blank" rel="noopener"
-           class="button primary">
-          Open tagging sheet →
-        </a>
-      </p>
-    </div>
-  </details>
+  <!-- CONTRIBUTE -->
+  <section class="contribute-card">
+    <h3>Contribute to tagging</h3>
 
-  <!-- SECTION 5 -->
-  <details>
-    <summary><strong>Contact the maintainer</strong></summary>
-    <div class="details-content">
-      <p>
-        The Explorer is a community-driven project — most tagging tweaks can be updated directly in the shared sheet
-        by anyone who notices them.
-      </p>
-      <p>
-        If you’d still like to get in touch, feel free to send an email.
-        I do my best to reply, even if it sometimes takes a little while.
-      </p>
+    <p>
+      You can edit Period, Region and Topic — all of them allow multiple selections.
+      Series is semi-automatic and can be changed manually.
+    </p>
 
-      <p><strong>📧 trihexplorer@gmail.com</strong></p>
-    </div>
-  </details>
+    <p>All other fields remain locked. Historians prefer their data unpillaged.</p>
+
+    <p>
+      If someone tags an episode wildly incorrectly, don’t worry —
+      another historian will quietly invade and restore order.
+    </p>
+
+    <p>You can update these fields directly in the community tagging sheet:</p>
+
+    <a href="https://docs.google.com/spreadsheets/d/1aqBur33aJGxYfpr4-Yb5z8cgEvRcGzHQlKna5QlaqA4/edit?usp=sharing"
+       target="_blank" rel="noopener"
+       class="button primary">
+      Open tagging sheet →
+    </a>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contribute-card">
+    <h3>Contact the maintainer</h3>
+
+    <p>
+      The Explorer is a community-driven project — most tagging improvements can be updated directly
+      in the shared sheet by anyone who notices them.
+    </p>
+
+    <p>
+      If you still want to get in touch, feel free to send an email.
+      I do my best to reply, even if it sometimes takes a little while.
+    </p>
+
+    <p><strong>📧 trihexplorer@gmail.com</strong></p>
+  </section>
 
 </main>
 
@@ -160,7 +164,7 @@
     </div>
 
     <div class="footer-credit">
-      Crafted by Magnus H – TRIH-fan
+      Crafted by Magnus H – TRIH fan
     </div>
 
   </div>
