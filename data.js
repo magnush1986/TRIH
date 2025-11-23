@@ -754,7 +754,7 @@ function rebuildFilterOptionsCascade() {
     const t = r.Topic && r.Topic.length ? r.Topic : ["No topic assigned"];
     t.forEach(v => topicSet.add(v));
     
-    const s = r.Series && r.Series.length ? r.Series : ["No series assigned"];
+    const s = r.Series ? [r.Series] : ["No series assigned"];
     s.forEach(v => seriesSet.add(v));
   });
 
