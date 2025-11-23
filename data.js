@@ -333,9 +333,6 @@ function setupGroupByPills() {
       debouncedApply();
     });
   });
-
-  // Default aktiv
-  state.groupBy = "date";
 }
 
 function resetFilters() {
@@ -928,21 +925,21 @@ function updateUrlFromState() {
 function applyUrlStateToUI() {
   const { q, years, periods, regions, topics, series } = state.filters;
 
-  // Fritext
+  // ---- Fritext ----
   if (q) {
     document.getElementById("q").value = q;
   }
 
-  // Checkboxar (alla dropdowns)
+  // ---- Checkboxar ----
   ["year","period","region","topic","series"].forEach(key => {
     const panel = document.querySelector(`.filter-dropdown[data-filter="${key}"]`);
     if (!panel) return;
 
     const set =
-      key === "year" ? years :
+      key === "year"   ? years :
       key === "period" ? periods :
       key === "region" ? regions :
-      key === "topic" ? topics :
+      key === "topic"  ? topics :
       series;
 
     Array.from(panel.querySelectorAll("input[type='checkbox']")).forEach(input => {
@@ -950,14 +947,11 @@ function applyUrlStateToUI() {
     });
   });
 
-  // Group by pills
+  // ---- Group-by pills ----
   const pills = document.querySelectorAll(".group-pill");
+
   pills.forEach(p => {
-    if (p.dataset.group === state.groupBy) {
-      p.classList.add("active");
-    } else {
-      p.classList.remove("active");
-    }
+    p.classList.toggle("active", p.dataset.group === state.groupBy);
   });
 }
 
