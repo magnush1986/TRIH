@@ -133,7 +133,7 @@ function bootstrap() {
         Region: parseTags(r["Region"]),
         Period: parseTags(r["Period"]),
         Topic: parseTags(r["Topic"]),
-        Series: parseTags(r["Series"])
+        Series: (r["Series"] || "").trim()
       }));
 
       state.raw = normalized.filter(r => r.Title);
@@ -191,11 +191,11 @@ function buildFilterOptions(rows) {
       topics.add("No topic assigned");
     }
 
-    if (r.Series && r.Series.length) {
-      r.Series.forEach(s => series.add(s));
+    if (r.Series) {
+      series.add(r.Series);
     } else {
       series.add("No series assigned");
-    }    
+    }
   });
 
   const host = document.getElementById("filterDropdownHost");
@@ -387,8 +387,8 @@ function applyAndRender() {
 
     // Series
     if (series.size) {
-      const tags = r.Series && r.Series.length ? r.Series : ["No series assigned"];
-      if (!tags.some(tag => series.has(tag))) return false;
+      const tag = r.Series || "No series assigned";
+      if (series.size && !series.has(tag)) return false;
     }
 
     return true;
@@ -1081,7 +1081,7 @@ function renderGroupsBySeries(rows) {
   // Group episodes by Series (multi-select)
   const groups = groupByMulti(
     rows,
-    r => r.Series && r.Series.length ? r.Series : ["No series assigned"],
+    r => [r.Series || "No series assigned"],
     [...state.filters.series]
   );
 
