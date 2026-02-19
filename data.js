@@ -608,8 +608,10 @@ function renderEpisodeCard(r) {
     dateStr && `📅 ${dateStr}`,
     r.Period.length && `📆 Period: ${escapeHtml(r.Period.join(", "))}`,
     r.Region.length && `🌍 Region: ${escapeHtml(r.Region.join(", "))}`,
-    r.Topic && r.Topic.length && `🏷️ Topic: ${escapeHtml(r.Topic.join(", "))}`
+    r.Topic && r.Topic.length && `🏷️ Topic: ${escapeHtml(r.Topic.join(", "))}`,
+    r.Series && `📚 Series: ${escapeHtml(r.Series)}`
   ].filter(Boolean).join(" · ");
+
 
   const desc = r.Description ? `<p class="desc">${escapeHtml(r.Description)}</p>` : "";
   const smartLink = r.GUID
